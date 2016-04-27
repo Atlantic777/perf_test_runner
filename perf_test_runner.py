@@ -75,11 +75,16 @@ class Job:
 
 class FileExplorer:
     root = None
-    self.input_extension = ".c"
-    self.EXCLUDE_LIST = [
+    INPUT_EXTENSION = ".c"
+    HEADER_EXTENSION = ".h"
+    EXCLUDE_LIST = [
         "polybench.c",
         ".exptree.c",
     ]
+
+    input_files = []
+    include_dirs = []
+
 
     def __init__(self, root):
         self.root = root
@@ -89,15 +94,18 @@ class FileExplorer:
             for f in files:
                 if f.endswith(self.INPUT_EXTENSION) and f not in self.EXCLUDE_LIST:
                     abs_path = path.join(root, f)
-                    INPUT_FILES.append( (abs_path, f) )
-                elif f.endswith(HEADER_FILE_EXTENSION):
-                    INCLUDE_DIRS.append(root)
-        return []
+                    self.input_files.append( SourceFile(abs_path, f) )
+                elif f.endswith(self.HEADER_EXTENSION):
+                    self.include_dirs.append(root)
+        return (self.input_files, self.include_dirs)
 
 class JobBuilder:
     compiler_options = None
     source_list = None
     jobs = None
+
+    def __init__(self, options, source_list):
+        pass
 
     def build_jobs(self):
         return []
@@ -116,10 +124,12 @@ class Application:
         self.options = CompilerOptions()
 
         self._explorer = FileExplorer(SINGLE_SOURCE_TESTS_ROOT)
-        self.source_list = self._explorer.find()
+        (self.source_list, self.include_dirs) = self._explorer.find()
 
-        self._job_builder = JobBuilder(options, self.source_list)
-        self.jobs = job_builder.build_jobs()
+        print(self.source_list)
+
+        self._job_builder = JobBuilder(self.options, self.source_list)
+        self.jobs = self._job_builder.build_jobs()
 
     def run(self):
         print("running app!")
