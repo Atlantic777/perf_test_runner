@@ -26,8 +26,8 @@ class CompilerOptions:
 
     def __init__(self):
         self.compilers_list = [
-            Compiler("gcc", GCC_PATH),
-            Compiler("clang", CLANG_PATH),
+            Compiler(name="gcc", path=GCC_PATH),
+            Compiler(name="clang", path=CLANG_PATH),
         ]
 
         self.optim_levels_list = [
@@ -37,6 +37,15 @@ class CompilerOptions:
             "-O3",
             "-Os",
         ]
+
+    def get_output_dirs(self):
+        d = []
+
+        for compiler in self.compilers_list:
+            for opt in self.optim_levels_list:
+                d.append(path.join(compiler.name, opt.strip('-').lower()))
+
+        return d
 
     def __str__(self):
         s = ""
@@ -66,7 +75,7 @@ class Job:
 
     def set_output(self, root):
         d = path.join(root, str(self.compiler), self.optim_level.strip('-').lower())
-        f = str(self.source).replace('.c', 'out')
+        f = str(self.source).replace('.c', '.out')
 
         self.output = path.join(d, f)
 
@@ -131,3 +140,10 @@ class JobBuilder:
                 jobs.append(job)
 
         return jobs
+
+    def make_output_dirs(self):
+        try:
+            for d in self.compiler_options.get_output_dirs():
+                makedirs(path.join(OUTPUT_ROOT, d))
+        except:
+            pass
