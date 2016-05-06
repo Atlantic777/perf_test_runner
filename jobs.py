@@ -23,6 +23,7 @@ from settings import (
 class CompilerOptions:
     compilers_list = None
     optim_levels_list = None
+    include_dirs = None
 
     def __init__(self):
         self.compilers_list = [
@@ -64,6 +65,15 @@ class CompilerOptions:
 
         return s
 
+    def get_include_dirs(self):
+        includes = ""
+
+        for i in self.include_dirs:
+            includes += "-I" + i + ' '
+
+        return includes
+
+
 class Job:
     compiler = None
     optim_level = None
@@ -72,6 +82,8 @@ class Job:
     static_prediction = None
     static_log = None
     dynamic_time = None
+    includes = None
+    libs = None
 
     def set_output(self, root):
         d = path.join(root, str(self.compiler), self.optim_level.strip('-').lower())
@@ -79,14 +91,23 @@ class Job:
 
         self.output = path.join(d, f)
 
+    def set_includes(self, includes):
+        self.includes = includes
+
     def __str__(self):
         return "Job: " + self.get_cmd()
 
     def get_cmd(self):
-        cmd =  " ".join([str(i) for i in [self.compiler, self.optim_level, self.source]])
-        cmd += " -o " + self.output
-
+        cmd = self.compiler.path + ' ' + self.get_cmd_args()
         return cmd
+
+    def get_cmd_args(self):
+        args = ""
+        args += "-lm "
+        args += self.includes
+        args +=  self.optim_level + ' ' + self.source.path
+        args += " -o" + self.output
+        return args
 
     def __repr__(self):
         return self.compiler + " " + self.source
@@ -138,6 +159,7 @@ class JobBuilder:
                 job.source = src
                 job.set_output(OUTPUT_ROOT)
                 jobs.append(job)
+                job.set_includes(self.compiler_options.get_include_dirs())
 
         return jobs
 

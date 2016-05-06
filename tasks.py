@@ -1,7 +1,10 @@
 from multiprocessing import Pool
+import subprocess
 
 def do_compile(job):
-    print("compiling: " + job.get_cmd())
+    cmd = job.get_cmd()
+    print(cmd)
+    subprocess.call([job.compiler.path] + job.get_cmd_args().split(' '))
 
 class Task:
     workers = 1
@@ -19,7 +22,7 @@ class Task:
 class CompilationTask(Task):
     def run(self):
         print("compiling...")
-        self.pool.map(do_compile, self.jobs[:8])
+        self.pool.map(do_compile, self.jobs)
 
 class StaticAnalysisTask(Task):
     pass
