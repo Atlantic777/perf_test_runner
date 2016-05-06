@@ -16,8 +16,6 @@ from tasks import (
 
 class Application:
     def __init__(self):
-        print("here")
-
         self.options = CompilerOptions()
 
         self._explorer = FileExplorer(SINGLE_SOURCE_TESTS_ROOT)
@@ -34,8 +32,14 @@ class Application:
             # DynamicAnalysisTask(workers=1, jobs=self.jobs),
         ]
 
+    def getActions(self):
         for task in self.tasks:
-            task.run()
+            try:
+                print(task.name)
+            except:
+                print("Nameless task...")
+
 
     def run(self):
-        print("running app!")
+        for task in self.tasks:
+            task.run()

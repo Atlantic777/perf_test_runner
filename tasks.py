@@ -20,8 +20,9 @@ class Task:
         raise Exception("Not implemented!")
 
 class CompilationTask(Task):
+    name = "Compile sources"
+
     def run(self):
-        print("compiling...")
         self.pool.map(do_compile, self.jobs)
 
 class StaticAnalysisTask(Task):

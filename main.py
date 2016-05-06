@@ -5,4 +5,4 @@ from application import Application
 
 if __name__ == "__main__":
     a = Application()
-    a.run()
+    a.getActions()
