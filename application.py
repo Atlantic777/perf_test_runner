@@ -14,6 +14,9 @@ from tasks import (
     DynamicAnalysisTask,
 )
 
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+
 class Application:
     def __init__(self):
         self.options = CompilerOptions()
@@ -32,14 +35,85 @@ class Application:
             # DynamicAnalysisTask(workers=1, jobs=self.jobs),
         ]
 
-    def getActions(self):
-        for task in self.tasks:
-            try:
-                print(task.name)
-            except:
-                print("Nameless task...")
+        self.actions = [
+            CompilationTask,
+        ]
 
 
     def run(self):
         for task in self.tasks:
             task.run()
+
+
+class JobListModel(QAbstractListModel):
+    pass
+
+class FindSourcesAction(QAction):
+    title = "Find sources"
+
+    def __init__(self, parent):
+        super().__init__(self.title, parent, triggered=self.on_triggered)
+        self.setParent(parent)
+
+    def on_triggered(self, event):
+        explorer = FileExplorer(SINGLE_SOURCE_TESTS_ROOT)
+        (source_list, include_dirs) = explorer.find()
+
+        self.parent().fill_sources(source_list)
+        self.parent().set_includes(include_dirs)
+
+class ActionsPane(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
+
+    def registerAction(self, action):
+        button = QToolButton()
+        button.setDefaultAction(action)
+        self.layout.addWidget(button)
+
+class GUIApplication(Application, QObject):
+    def __init__(self):
+        super(Application, self).__init__()
+        super(QObject, self).__init__()
+
+        self.qApp = QApplication([])
+        self.w = QWidget()
+
+        self.w.resize(640, 480)
+        self.w.setWindowTitle("# Hello world!")
+
+        self.build_layout()
+        self.register_actions()
+
+        self.w.show()
+
+    def run(self):
+        self.qApp.exec_()
+
+    def build_layout(self):
+        self.layout = QVBoxLayout()
+        self.w.setLayout(self.layout)
+
+        self.main = QSplitter()
+        self.actions_pane = ActionsPane()
+
+        self.job_list_view = QListView()
+        self.job_list_view.setModel(JobListModel())
+
+        self.main.addWidget(self.job_list_view)
+        self.main.addWidget(QTextBrowser())
+        self.main.addWidget(self.actions_pane)
+
+        self.layout.addWidget(self.main)
+
+    def fill_sources(self, sources):
+        print("Filling sources")
+
+    def set_includes(self, includes):
+        pass
+
+    def register_actions(self):
+        self.actions_pane.registerAction(FindSourcesAction(self))

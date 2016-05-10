@@ -17,6 +17,7 @@ from settings import (
     HEADER_EXTENSION,
     EXCLUDE_LIST,
     OUTPUT_ROOT,
+    SINGLE_SOURCE_TESTS_ROOT,
 )
 
 
@@ -119,7 +120,7 @@ class FileExplorer:
     include_dirs = []
 
 
-    def __init__(self, root):
+    def __init__(self, root=SINGLE_SOURCE_TESTS_ROOT):
         self.root = root
 
     def find(self):
