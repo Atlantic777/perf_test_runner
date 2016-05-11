@@ -13,7 +13,7 @@ def scratch():
     options = CompilerOptions()
 
     explorer = FileExplorer()
-    sources_list = explorer.find()
+    (sources_list, include_list) = explorer.find()
 
     manager = EntityManager(options)
     manager.createEntityList(sources_list)

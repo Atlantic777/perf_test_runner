@@ -1,24 +1,24 @@
 from os import path
 
 class Entity:
-    def __init__(self, sourcePath, options):
+    def __init__(self, source, options):
         entities = {}
 
         for compiler in options.compilers_list:
-            entities[compiler] = {}
+            entities[compiler.name] = {}
 
             for opt in options.optim_levels_list:
-                e = EntityInstance(sourcePath, compiler, opt)
+                e = EntityInstance(compiler, opt)
                 entities[compiler.name][opt] = e
 
-        self.name = path.basename(sourcePath)
-        self.sourcePath = sourcePath
+        self.source = source
 
     def __str__(self):
-        return self.name
+        return self.source.name
 
 class EntityInstance:
-    pass
+    def __init__(self, compiler, opt):
+        pass
 
 class EntityManager:
     entityList = []
