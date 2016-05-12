@@ -14,7 +14,11 @@ from tasks import (
     DynamicAnalysisTask,
 )
 
-from widgets import EntityManagerView
+from widgets import (
+    EntityManagerView,
+    EntityView,
+)
+
 from models import EntityManagerListModel
 from entity import *
 
@@ -99,10 +103,6 @@ class GUIApplication(Application, QObject):
         self.build_options = CompilerOptions()
         self.entity_manager = EntityManager(self.build_options)
 
-        (sources_list, include_list) = FileExplorer().find()
-
-        self.entity_manager.createEntityList(sources_list)
-
     def run(self):
         self.qApp.exec_()
 
@@ -113,16 +113,27 @@ class GUIApplication(Application, QObject):
         self.main = QSplitter()
         self.actions_pane = ActionsPane()
 
+        self.entity_widget = QSplitter(Qt.Vertical)
+
         self.job_list_view = EntityManagerView(self.entity_manager)
+        self.entity_view = EntityView()
 
         self.main.addWidget(self.job_list_view)
+
+        self.main.addWidget(self.entity_widget)
+        self.entity_widget.addWidget(self.entity_view)
+        self.entity_widget.addWidget(QTextBrowser())
         self.main.addWidget(QTextBrowser())
+
+        self.job_list_view.entitySelectionChanged.connect(self.entity_view.entitySelectionChanged)
+
         self.main.addWidget(self.actions_pane)
 
         self.layout.addWidget(self.main)
 
     def fill_sources(self, sources):
-        print("Filling sources")
+        self.entity_manager.createEntityList(sources)
+        self.job_list_view.model().endResetModel()
 
     def set_includes(self, includes):
         pass
