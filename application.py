@@ -14,6 +14,10 @@ from tasks import (
     DynamicAnalysisTask,
 )
 
+from widgets import EntityManagerView
+from models import EntityManagerListModel
+from entity import *
+
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
@@ -85,10 +89,19 @@ class GUIApplication(Application, QObject):
         self.w.resize(640, 480)
         self.w.setWindowTitle("# Hello world!")
 
+        self.setup_entity_manager()
         self.build_layout()
         self.register_actions()
 
         self.w.show()
+
+    def setup_entity_manager(self):
+        self.build_options = CompilerOptions()
+        self.entity_manager = EntityManager(self.build_options)
+
+        (sources_list, include_list) = FileExplorer().find()
+
+        self.entity_manager.createEntityList(sources_list)
 
     def run(self):
         self.qApp.exec_()
@@ -100,8 +113,7 @@ class GUIApplication(Application, QObject):
         self.main = QSplitter()
         self.actions_pane = ActionsPane()
 
-        self.job_list_view = QListView()
-        self.job_list_view.setModel(JobListModel())
+        self.job_list_view = EntityManagerView(self.entity_manager)
 
         self.main.addWidget(self.job_list_view)
         self.main.addWidget(QTextBrowser())

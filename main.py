@@ -23,5 +23,5 @@ def scratch():
 
 
 if __name__ == "__main__":
-    # main()
-    scratch()
+    main()
+    # scratch()
