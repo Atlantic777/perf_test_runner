@@ -84,6 +84,8 @@ class GUIApplication(Application, QObject):
         self.selected_instance = None
         self.selected_entity = None
 
+        self.actions['find_sources'].on_triggered()
+
         self.w.show()
 
     def setup_entity_manager(self):
@@ -132,17 +134,20 @@ class GUIApplication(Application, QObject):
         self.includes = includes
 
     def register_actions(self):
-        self.actions_pane.registerAction(FindSourcesAction(self))
-        self.actions_pane.registerAction(CompileInstanceAction(self))
+        self.actions = {}
+
+        self._register_single_action('find_sources', FindSourcesAction)
+        self._register_single_action('compile_instance', CompileInstanceAction)
+
+    def _register_single_action(self, name, action_class):
+        self.actions[name] = action_class(self)
+        self.actions_pane.registerAction(self.actions[name])
 
     @pyqtSlot(Entity)
     def set_entity(self, entity):
-        self.entity = entity
-        self.instance = None
+        self.selected_entity = entity
+        self.selected_instance = None
 
     @pyqtSlot(EntityInstance)
     def set_instance(self, instance):
-        self.instance = instance
-
-        print(self.entity)
-        print( (self.instance.compiler.name, self.instance.opt) )
+        self.selected_instance = instance

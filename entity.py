@@ -8,7 +8,7 @@ class Entity:
             self.instances[compiler.name] = {}
 
             for opt in options.optim_levels_list:
-                e = EntityInstance(compiler, opt)
+                e = EntityInstance(self, compiler, opt)
                 self.instances[compiler.name][opt] = e
 
         self.source = source
@@ -18,8 +18,10 @@ class Entity:
 
 class EntityInstance:
     _hash = None
+    results = {}
 
-    def __init__(self, compiler, opt):
+    def __init__(self, parent, compiler, opt):
+        self.parent = parent
         self.compiler = compiler
         self.opt = opt
 
@@ -28,6 +30,9 @@ class EntityInstance:
             return "<hash>"
         else:
             return self._hash
+
+    def __repr__(self):
+        return str( (self.parent.source.name, self.compiler.name, self.opt) )
 
 class EntityManager:
     entityList = []

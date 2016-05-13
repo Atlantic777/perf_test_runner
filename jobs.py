@@ -20,6 +20,8 @@ from settings import (
     SINGLE_SOURCE_TESTS_ROOT,
 )
 
+import subprocess
+import hashlib
 
 class CompilerOptions:
     compilers_list = None
@@ -170,3 +172,48 @@ class JobBuilder:
                 makedirs(path.join(OUTPUT_ROOT, d))
         except:
             pass
+
+class CompilerJob:
+    includes = None
+    instance = None
+
+    def __init__(self, instance, includes):
+        self.includes = includes
+
+        self.instance = instance
+        self.instance.results['compilation_output_path'] = self.get_output_path()
+
+    def get_output_path(self):
+        compiler = self.instance.compiler.name
+        optim = self.instance.opt
+
+        d = path.join(OUTPUT_ROOT, compiler, optim.strip('-').lower())
+        f = self.instance.parent.source.name.replace('.c', '.out')
+
+        return path.join(d, f)
+
+    def run(self):
+        try:
+            resp = subprocess.call(self.get_cmd_args_list(), stderr=subprocess.STDOUT)
+
+            out = self.instance.results['compilation_output_path']
+            _hash = hashlib.md5(open(out, "rb").read()).hexdigest()
+            self.instance._hash = _hash
+
+        except subprocess.CalledProcessError as e:
+            print(e.output)
+            self.instance.results.pop('compilation_output_path')
+
+        except Exception as e:
+            print(e)
+
+    def get_cmd_args_list(self):
+        args = []
+        args.append(self.instance.compiler.path)
+        args.append("-lm")
+        args += ['-I' + include_folder for include_folder in self.includes]
+        args.append(self.instance.opt)
+        args.append(self.instance.parent.source.path)
+        args.append("-o" + self.get_output_path())
+
+        return args

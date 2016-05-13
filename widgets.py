@@ -59,3 +59,6 @@ class EntityView(QTableView):
         instance = self.entity_model.getInstanceAt(idx.row(), idx.column())
 
         self.instanceSelectionChanged.emit(instance)
+
+    def refresh(self):
+        self.entity_model.endResetModel()
