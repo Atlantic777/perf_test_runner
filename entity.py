@@ -2,14 +2,14 @@ from os import path
 
 class Entity:
     def __init__(self, source, options):
-        entities = {}
+        self.instances = {}
 
         for compiler in options.compilers_list:
-            entities[compiler.name] = {}
+            self.instances[compiler.name] = {}
 
             for opt in options.optim_levels_list:
                 e = EntityInstance(compiler, opt)
-                entities[compiler.name][opt] = e
+                self.instances[compiler.name][opt] = e
 
         self.source = source
 
@@ -18,7 +18,8 @@ class Entity:
 
 class EntityInstance:
     def __init__(self, compiler, opt):
-        pass
+        self.compiler = compiler
+        self.opt = opt
 
 class EntityManager:
     entityList = []

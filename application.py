@@ -90,7 +90,7 @@ class GUIApplication(Application, QObject):
         self.qApp = QApplication([])
         self.w = QWidget()
 
-        self.w.resize(640, 480)
+        self.w.resize(1300, 700)
         self.w.setWindowTitle("# Hello world!")
 
         self.setup_entity_manager()
@@ -123,7 +123,6 @@ class GUIApplication(Application, QObject):
         self.main.addWidget(self.entity_widget)
         self.entity_widget.addWidget(self.entity_view)
         self.entity_widget.addWidget(QTextBrowser())
-        self.main.addWidget(QTextBrowser())
 
         self.job_list_view.entitySelectionChanged.connect(self.entity_view.entitySelectionChanged)
 
