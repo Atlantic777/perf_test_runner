@@ -106,6 +106,7 @@ class GUIApplication(Application, QObject):
         self.entity_view = EntityView()
 
         self.main.addWidget(self.job_list_view)
+        self.job_list_view.width()
 
         self.main.addWidget(self.entity_widget)
         self.entity_widget.addWidget(self.entity_view)
@@ -119,6 +120,8 @@ class GUIApplication(Application, QObject):
         self.main.addWidget(self.actions_pane)
 
         self.layout.addWidget(self.main)
+
+        self.main.setSizes([250, 800, 250])
 
     def fill_sources(self, sources):
         self.entity_manager.createEntityList(sources)
