@@ -75,7 +75,4 @@ class EntityTableModel(QAbstractTableModel):
         self.entity = entity
         self.build_instances()
 
-        print(len( self.instances ))
-
-
         self.endResetModel()

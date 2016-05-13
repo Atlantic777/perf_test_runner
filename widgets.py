@@ -11,7 +11,11 @@ from PyQt4.QtCore import (
     pyqtSignal,
 )
 
-from entity import Entity
+from entity import (
+    Entity,
+    EntityInstance,
+)
+
 from models import (
     EntityManagerListModel,
     EntityTableModel,
@@ -32,6 +36,7 @@ class EntityManagerView(QListView):
         self.entitySelectionChanged.emit(entity)
 
 class EntityView(QTableView):
+    instanceSelectionChanged = pyqtSignal(EntityInstance)
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -39,8 +44,18 @@ class EntityView(QTableView):
         self.setModel(self.entity_model)
 
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setSelectionMode(QAbstractItemView.SingleSelection)
 
     @pyqtSlot(Entity)
     def entitySelectionChanged(self, entity):
         self.entity = entity
         self.entity_model.setEntity(entity)
+
+
+    def selectionChanged(self, selected, deselected):
+        super().selectionChanged(selected, deselected)
+
+        idx = selected.indexes()[0].row()
+        instance = self.entity_model.instances[idx]
+
+        self.instanceSelectionChanged.emit(instance)
