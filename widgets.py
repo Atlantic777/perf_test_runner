@@ -43,7 +43,7 @@ class EntityView(QTableView):
         self.entity_model = EntityTableModel()
         self.setModel(self.entity_model)
 
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        # self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
 
     @pyqtSlot(Entity)
@@ -55,7 +55,7 @@ class EntityView(QTableView):
     def selectionChanged(self, selected, deselected):
         super().selectionChanged(selected, deselected)
 
-        idx = selected.indexes()[0].row()
-        instance = self.entity_model.instances[idx]
+        idx = selected.indexes()[0]
+        instance = self.entity_model.getInstanceAt(idx.row(), idx.column())
 
         self.instanceSelectionChanged.emit(instance)

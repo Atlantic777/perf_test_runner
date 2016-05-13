@@ -25,54 +25,57 @@ class EntityManagerListModel(QAbstractListModel):
             return None
 
 class EntityTableModel(QAbstractTableModel):
-    columns = [
-        'compiler',
-        'opt',
-    ]
-
     def __init__(self, entity=None):
         super().__init__()
         self.entity = entity
 
-    def build_instances(self):
-        if self.entity is None:
-            self.instances = None
-            return
-
-        self.instances = []
-
-        for comp in list(self.entity.instances):
-            for opt in list(self.entity.instances[comp]):
-                self.instances.append(self.entity.instances[comp][opt])
+    def rebuild_internal_structures(self):
+        self.compilers = list( self.entity.instances.keys() )
+        self.optims = list(self.entity.instances[self.compilers[0]].keys())
 
     def __str__(self):
         return self.entity.source.name + " " + self.entity.source.path
 
     def columnCount(self, index):
-        return len(self.columns)
+        if self.entity is None:
+            return 0
+        else:
+            cols =  max([len(opts) for opts in self.entity.instances.values()])
+            return cols # the one for compiler name
 
     def rowCount(self, index):
         if self.entity is None:
             return 0
         else:
-            return len(self.instances)
+            return len(self.entity.instances) # compilers count
 
     def data(self, index, role):
         if self.entity is None:
             return None
 
         if role == QtCore.Qt.DisplayRole:
-            if index.column() == 0:
-                return self.instances[index.row()].compiler.name
-            elif index.column() == 1:
-                return self.instances[index.row()].opt
+            instance = self.getInstanceAt(index.row(), index.column())
+            return instance.getHash()
         else:
             return None
+
+    def headerData(self, section, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return self.optims[section]
+            elif orientation == QtCore.Qt.Vertical:
+                return self.compilers[section]
 
     def setEntity(self, entity):
         self.beginResetModel()
 
         self.entity = entity
-        self.build_instances()
+        self.rebuild_internal_structures()
 
         self.endResetModel()
+
+    def getInstanceAt(self, row, col):
+        compiler = self.compilers[row]
+        opt = self.optims[col]
+
+        return self.entity.instances[compiler][opt]

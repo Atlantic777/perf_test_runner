@@ -17,9 +17,17 @@ class Entity:
         return self.source.name
 
 class EntityInstance:
+    _hash = None
+
     def __init__(self, compiler, opt):
         self.compiler = compiler
         self.opt = opt
+
+    def getHash(self):
+        if self._hash is None:
+            return "<hash>"
+        else:
+            return self._hash
 
 class EntityManager:
     entityList = []

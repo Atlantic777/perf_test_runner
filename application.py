@@ -122,6 +122,7 @@ class GUIApplication(Application, QObject):
         self.layout.addWidget(self.main)
 
         self.main.setSizes([250, 800, 250])
+        self.entity_widget.setSizes([100, 600])
 
     def fill_sources(self, sources):
         self.entity_manager.createEntityList(sources)
@@ -142,3 +143,6 @@ class GUIApplication(Application, QObject):
     @pyqtSlot(EntityInstance)
     def set_instance(self, instance):
         self.instance = instance
+
+        print(self.entity)
+        print( (self.instance.compiler.name, self.instance.opt) )
