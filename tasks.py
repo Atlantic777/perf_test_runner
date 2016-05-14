@@ -1,3 +1,6 @@
+"""
+Legacy module for cli application - deprecated
+"""
 from multiprocessing import Pool
 import subprocess
 

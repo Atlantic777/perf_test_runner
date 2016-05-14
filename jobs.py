@@ -1,3 +1,7 @@
+"""
+JobGenerators (business logic, subprocessing)
+"""
+
 from files import (
     Compiler,
     SourceFile,

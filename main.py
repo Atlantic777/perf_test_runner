@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+"""This is entry point of GUI application"""
+
 from multiprocessing import Pool
 from time import sleep
 from application import Application, GUIApplication

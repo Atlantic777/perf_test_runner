@@ -1,3 +1,7 @@
+"""
+Just raw config data
+"""
+
 from os.path import join
 
 HOME = "/home/nikola/"

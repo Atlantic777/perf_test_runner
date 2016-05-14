@@ -1,3 +1,6 @@
+"""
+Test source files, their instances and their manager:
+"""
 from os import path
 
 class Entity:
@@ -46,3 +49,10 @@ class EntityManager:
 
         for source in sourceList:
             self.entityList.append(Entity(source, self.buildOptions))
+
+    def discover_result_files(self):
+        for entity in self.entityList:
+            # guess result file path
+            # try to open it
+            # add to entity structure
+            pass

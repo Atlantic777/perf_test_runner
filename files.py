@@ -1,3 +1,8 @@
+"""
+Abstract class with instances to encapsulate representation
+of various files on disk
+"""
+
 class File:
     name = None
     path = None

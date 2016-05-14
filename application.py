@@ -1,3 +1,6 @@
+"""
+Application and GUIApplication - wrap everything together
+"""
 from jobs import (
     CompilerOptions,
     FileExplorer,

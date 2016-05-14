@@ -1,3 +1,9 @@
+"""
+Wraps job into QAction objects
+
+Such objects can easibly be assigned to QButtons
+and added to an ActionBar
+"""
 from PyQt4.QtGui import QAction
 from settings import *
 

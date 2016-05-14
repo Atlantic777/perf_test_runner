@@ -1,3 +1,7 @@
+"""
+Models which encapsulate raw data structures
+in a way suitable for MVC and Qt widgets
+"""
 from entity import EntityManager
 from PyQt4.QtCore import (
     QAbstractListModel,

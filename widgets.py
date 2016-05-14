@@ -1,3 +1,6 @@
+"""
+QWidgets for representing models of raw data
+"""
 from PyQt4.QtGui import (
     QListView,
     QWidget,
