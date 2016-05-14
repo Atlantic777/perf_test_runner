@@ -169,3 +169,21 @@ class ExecutableSizeJob:
         ]
 
         return args
+
+class TimeExecutionJob:
+    def __init__(self, instance):
+        self.instance = instance
+
+    def run(self):
+        p = subprocess.Popen(self.get_args_list(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        out, err = p.communicate()
+
+        self.instance.results['execution_time'] = ''.join([chr(i) for i in err])
+
+    def get_args_list(self):
+        args = [
+            'time',
+            self.instance.results['compilation_output_path'],
+        ]
+
+        return args

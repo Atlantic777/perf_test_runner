@@ -135,3 +135,22 @@ class SizeAction(MetaAction):
             job.run()
             self.parent().instance_view.refresh()
 
+
+class TimeAction(MetaAction):
+    """
+    Measure execution time
+    """
+    title = "Measure execution time"
+
+    def on_triggered(self, event):
+        instance = self.parent().selected_instance
+
+        if (
+                instance is None
+                or 'compilation_output_path' not in instance.results
+        ):
+            print("can't do that")
+        else:
+            job = TimeExecutionJob(instance)
+            job.run()
+            self.parent().instance_view.refresh()

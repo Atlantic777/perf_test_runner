@@ -122,6 +122,7 @@ class InstanceView(QWidget):
             'opt_stats',
             'perf_stats',
             'executable_size',
+            'execution_time',
         ]
 
         report = ""

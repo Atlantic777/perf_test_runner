@@ -111,6 +111,7 @@ class GUIApplication(Application, QObject):
         self._register_single_action('optim_stats', OptimiserStatsAction)
         self._register_single_action('perf', PerfAction)
         self._register_single_action('size', SizeAction)
+        self._register_single_action('time', TimeAction)
 
     def _register_single_action(self, name, action_class):
         self.actions[name] = action_class(self)
