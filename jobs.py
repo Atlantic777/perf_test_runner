@@ -217,3 +217,38 @@ class CompilerJob:
         args.append("-o" + self.get_output_path())
 
         return args
+
+class GenerateBitcodeJob:
+    def __init__(self, instance):
+        self.instance = instance
+        self.out = self.get_output_path()
+
+    def run(self):
+        try:
+            subprocess.check_call(self.get_cmd_args_list(), stderr=subprocess.STDOUT)
+            self.instance.results['bitcode_path'] = self.out
+        except subprocess.CalledProcessError as e:
+            print(e)
+        except Exception as e:
+            print(e)
+
+    def get_output_path(self):
+        compiler = self.instance.compiler.name
+        optim = self.instance.opt
+
+        d = path.join(OUTPUT_ROOT, compiler, optim.strip('-').lower())
+        f = self.instance.parent.source.name.replace('.c', '.ll')
+
+        return path.join(d, f)
+
+    def get_cmd_args_list(self):
+        args = [
+            self.instance.compiler.path,
+            "-emit-llvm",
+            "-S",
+            self.instance.opt,
+            self.instance.parent.source.path,
+            "-o" + self.out,
+        ]
+
+        return args

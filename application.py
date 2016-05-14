@@ -17,6 +17,7 @@ from tasks import (
 from widgets import (
     EntityManagerView,
     EntityView,
+    InstanceView,
 )
 
 from models import EntityManagerListModel
@@ -106,18 +107,14 @@ class GUIApplication(Application, QObject):
 
         self.job_list_view = EntityManagerView(self.entity_manager)
         self.entity_view = EntityView()
+        self.instance_view = InstanceView()
 
         self.main.addWidget(self.job_list_view)
         self.job_list_view.width()
 
         self.main.addWidget(self.entity_widget)
         self.entity_widget.addWidget(self.entity_view)
-        self.entity_widget.addWidget(QTextBrowser())
-
-        self.job_list_view.entitySelectionChanged.connect(self.entity_view.entitySelectionChanged)
-        self.job_list_view.entitySelectionChanged.connect(self.set_entity)
-
-        self.entity_view.instanceSelectionChanged.connect(self.set_instance)
+        self.entity_widget.addWidget(self.instance_view)
 
         self.main.addWidget(self.actions_pane)
 
@@ -125,6 +122,18 @@ class GUIApplication(Application, QObject):
 
         self.main.setSizes([250, 800, 250])
         self.entity_widget.setSizes([100, 600])
+
+        self.connect_signals()
+
+    def connect_signals(self):
+        entity_changed = self.job_list_view.entitySelectionChanged
+        instance_changed = self.entity_view.instanceSelectionChanged
+
+        entity_changed.connect(self.entity_view.entitySelectionChanged)
+        entity_changed.connect(self.set_entity)
+
+        instance_changed.connect(self.set_instance)
+        instance_changed.connect(self.instance_view.setInstance)
 
     def fill_sources(self, sources):
         self.entity_manager.createEntityList(sources)
@@ -138,6 +147,7 @@ class GUIApplication(Application, QObject):
 
         self._register_single_action('find_sources', FindSourcesAction)
         self._register_single_action('compile_instance', CompileInstanceAction)
+        self._register_single_action('generate_ll', GenerateBitcode)
 
     def _register_single_action(self, name, action_class):
         self.actions[name] = action_class(self)

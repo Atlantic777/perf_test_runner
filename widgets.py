@@ -5,6 +5,7 @@ from PyQt4.QtGui import (
     QVBoxLayout,
     QTableView,
     QAbstractItemView,
+    QTextBrowser,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -62,3 +63,40 @@ class EntityView(QTableView):
 
     def refresh(self):
         self.entity_model.endResetModel()
+
+
+class InstanceView(QWidget):
+    instance = None
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.build_layout()
+
+    def build_layout(self):
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.browser = QTextBrowser()
+        self.layout.addWidget(self.browser)
+
+    def setInstance(self, instance):
+        self.instance = instance
+        self.refresh()
+
+    def refresh(self):
+        if self.instance is None:
+            return
+
+        report = self.generate_report()
+        self.browser.setText(report)
+
+    def generate_report(self):
+        report = "Hello world!\n"
+
+        try:
+            report += self.instance.results['bitcode_path']
+        except:
+            pass
+
+
+        return report
