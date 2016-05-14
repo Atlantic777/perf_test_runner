@@ -1,10 +1,6 @@
 from . import Application
 
-from jobs import (
-    CompilerOptions,
-    FileExplorer,
-    JobBuilder,
-)
+from jobs import *
 
 from widgets import (
     EntityManagerView,
@@ -113,6 +109,7 @@ class GUIApplication(Application, QObject):
         self._register_single_action('compile_instance', CompileInstanceAction)
         self._register_single_action('generate_ll', GenerateBitcodeAction)
         self._register_single_action('optim_stats', OptimiserStatsAction)
+        self._register_single_action('perf', PerfAction)
 
     def _register_single_action(self, name, action_class):
         self.actions[name] = action_class(self)

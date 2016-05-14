@@ -120,6 +120,7 @@ class InstanceView(QWidget):
         result_types = [
             'bitcode_path',
             'opt_stats',
+            'perf_stats',
         ]
 
         report = ""

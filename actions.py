@@ -95,3 +95,23 @@ class OptimiserStatsAction(MetaAction):
             job = GenerateOptimiserStatsJob(instance)
             job.run()
             self.parent().instance_view.refresh()
+
+
+class PerfAction(MetaAction):
+    """
+    Measure execution performance stats (IPC!) with perf tool.
+    """
+    title = "Perf measuring stats"
+
+    def on_triggered(self, event):
+        instance = self.parent().selected_instance
+
+        if (
+                instance is None
+                or 'compilation_output_path' not in instance.results
+        ):
+            print("can't do that")
+        else:
+            job = PerfJob(instance)
+            job.run()
+            self.parent().instance_view.refresh()
