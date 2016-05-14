@@ -28,41 +28,64 @@ from settings import (
 import subprocess
 import hashlib
 
-class CompilerJob:
-    includes = None
-    instance = None
+class JobBase:
+    tag = None
+    output_extension = None
 
-    def __init__(self, instance, includes):
-        self.includes = includes
-
+    def __init__(self, instance):
         self.instance = instance
-        self.instance.results['compilation_output_path'] = self.get_output_path()
+
+    def run(self):
+        try:
+            pipe = subprocess.PIPE
+            args = self.get_args_list()
+            proc = subprocess.Popen(args, stdout=pipe, stderr=pipe)
+
+            (out, err) = proc.communicate()
+            (out, err) = ( self._b2s(out), self._b2s(err) )
+
+            self.collect_results(out, err)
+        except Exception as e:
+            print(e)
+
+    def get_args_list(self):
+        raise Exception("not implemented!")
+
+    def collect_results(self, out=None, err=None):
+        pass
+
+    def _b2s(self, b):
+        return ''.join([chr(i) for i in b])
 
     def get_output_path(self):
+        if self.output_extension is None:
+            raise Exception("output extension is not set!")
+
         compiler = self.instance.compiler.name
         optim = self.instance.opt
 
         d = path.join(OUTPUT_ROOT, compiler, optim.strip('-').lower())
-        f = self.instance.parent.source.name.replace('.c', '.out')
+        f = self.instance.parent.source.name.replace('.c', self.output_extension)
 
         return path.join(d, f)
 
-    def run(self):
-        try:
-            resp = subprocess.call(self.get_cmd_args_list(), stderr=subprocess.STDOUT)
+class CompilerJob(JobBase):
+    includes = None
+    instance = None
+    output_extension = ".out"
 
-            out = self.instance.results['compilation_output_path']
-            _hash = hashlib.md5(open(out, "rb").read()).hexdigest()
-            self.instance._hash = _hash
+    def __init__(self, instance, includes):
+        super().__init__(instance)
 
-        except subprocess.CalledProcessError as e:
-            print(e.output)
-            self.instance.results.pop('compilation_output_path')
+        self.includes = includes
+        self.instance.results['compilation_output_path'] = self.get_output_path()
 
-        except Exception as e:
-            print(e)
+    def collect_results(self, out=None, err=None):
+        out = self.instance.results['compilation_output_path']
+        _hash = hashlib.md5(open(out, "rb").read()).hexdigest()
+        self.instance._hash = _hash
 
-    def get_cmd_args_list(self):
+    def get_args_list(self):
         args = []
         args.append(self.instance.compiler.path)
         args.append("-lm")
