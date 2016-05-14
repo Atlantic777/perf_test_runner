@@ -10,6 +10,7 @@ from widgets import (
     EntityManagerView,
     EntityView,
     InstanceView,
+    ActionsPane,
 )
 
 from PyQt4.QtGui import *
@@ -18,19 +19,6 @@ from PyQt4.QtCore import *
 from models import EntityManagerListModel
 from entity import *
 from actions import *
-
-class ActionsPane(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.layout.addStretch()
-
-    def registerAction(self, action):
-        button = QToolButton()
-        button.setDefaultAction(action)
-        self.layout.addWidget(button)
 
 class GUIApplication(Application, QObject):
     def __init__(self):

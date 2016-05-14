@@ -10,6 +10,7 @@ from PyQt4.QtGui import (
     QAbstractItemView,
     QTextBrowser,
     QFont,
+    QToolButton,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -25,6 +26,20 @@ from models import (
     EntityManagerListModel,
     EntityTableModel,
 )
+
+class ActionsPane(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.layout.addStretch()
+
+    def registerAction(self, action):
+        button = QToolButton()
+        button.setDefaultAction(action)
+        self.layout.addWidget(button)
+
 
 class EntityManagerView(QListView):
     entitySelectionChanged = pyqtSignal(Entity)
