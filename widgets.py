@@ -121,6 +121,7 @@ class InstanceView(QWidget):
             'bitcode_path',
             'opt_stats',
             'perf_stats',
+            'executable_size',
         ]
 
         report = ""

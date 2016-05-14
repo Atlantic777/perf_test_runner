@@ -110,6 +110,7 @@ class GUIApplication(Application, QObject):
         self._register_single_action('generate_ll', GenerateBitcodeAction)
         self._register_single_action('optim_stats', OptimiserStatsAction)
         self._register_single_action('perf', PerfAction)
+        self._register_single_action('size', SizeAction)
 
     def _register_single_action(self, name, action_class):
         self.actions[name] = action_class(self)

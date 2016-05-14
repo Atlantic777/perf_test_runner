@@ -115,3 +115,23 @@ class PerfAction(MetaAction):
             job = PerfJob(instance)
             job.run()
             self.parent().instance_view.refresh()
+
+class SizeAction(MetaAction):
+    """
+    Measure size of executable (ELF)
+    """
+    title = "Measure with size"
+
+    def on_triggered(self, event):
+        instance = self.parent().selected_instance
+
+        if (
+                instance is None
+                or 'compilation_output_path' not in instance.results
+        ):
+            print("can't do that")
+        else:
+            job = ExecutableSizeJob(instance)
+            job.run()
+            self.parent().instance_view.refresh()
+
