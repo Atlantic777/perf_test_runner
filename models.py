@@ -31,7 +31,10 @@ class EntityTableModel(QAbstractTableModel):
 
     def rebuild_internal_structures(self):
         self.compilers = list( self.entity.instances.keys() )
+        self.compilers.sort()
+
         self.optims = list(self.entity.instances[self.compilers[0]].keys())
+        self.optims.sort()
 
     def __str__(self):
         return self.entity.source.name + " " + self.entity.source.path
