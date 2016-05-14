@@ -1,11 +1,7 @@
 from PyQt4.QtGui import QAction
 from settings import *
 
-from jobs import (
-    FileExplorer,
-    CompilerJob,
-    GenerateBitcodeJob,
-)
+from jobs import *
 
 class MetaAction(QAction):
     def __init__(self, parent=None):
@@ -40,15 +36,34 @@ class CompileInstanceAction(MetaAction):
             job.run()
             self.parent().entity_view.refresh()
 
-class GenerateBitcode(MetaAction):
+class GenerateBitcodeAction(MetaAction):
     title = "Generate LLVM IR"
 
     def on_triggered(self, event):
         instance = self.parent().selected_instance
+        includes = self.parent().includes
 
         if instance is None or instance.compiler.name != 'clang':
             print("can't do that")
         else:
-            job = GenerateBitcodeJob(instance)
+            job = GenerateBitcodeJob(instance, includes)
+            job.run()
+            self.parent().instance_view.refresh()
+
+class OptimiserStatsAction(MetaAction):
+    title = "Get optimiser stats"
+
+    def on_triggered(self, event):
+        instance = self.parent().selected_instance
+
+        if (
+                instance is None
+                or 'bitcode_path' not in instance.results
+                or instance.compiler.name != 'clang'
+                or instance.opt == '-O0'
+        ):
+            print("can't do that")
+        else:
+            job = GenerateOptimiserStatsJob(instance)
             job.run()
             self.parent().instance_view.refresh()

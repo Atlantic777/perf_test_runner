@@ -17,13 +17,13 @@ class Entity:
         return self.source.name
 
 class EntityInstance:
-    _hash = None
-    results = {}
 
     def __init__(self, parent, compiler, opt):
         self.parent = parent
         self.compiler = compiler
         self.opt = opt
+        self.results = {}
+        self._hash = None
 
     def getHash(self):
         if self._hash is None:

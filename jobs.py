@@ -18,6 +18,7 @@ from settings import (
     EXCLUDE_LIST,
     OUTPUT_ROOT,
     SINGLE_SOURCE_TESTS_ROOT,
+    OPT_PATH,
 )
 
 import subprocess
@@ -219,9 +220,10 @@ class CompilerJob:
         return args
 
 class GenerateBitcodeJob:
-    def __init__(self, instance):
+    def __init__(self, instance, includes):
         self.instance = instance
         self.out = self.get_output_path()
+        self.includes = includes
 
     def run(self):
         try:
@@ -246,9 +248,32 @@ class GenerateBitcodeJob:
             self.instance.compiler.path,
             "-emit-llvm",
             "-S",
-            self.instance.opt,
+            "-O0",
             self.instance.parent.source.path,
             "-o" + self.out,
+        ]
+        args += ['-I' + include_folder for include_folder in self.includes]
+
+        return args
+
+class GenerateOptimiserStatsJob:
+    def __init__(self, instance):
+        self.instance = instance
+
+    def run(self):
+        p = subprocess.Popen(self.get_args_list(),  stderr=subprocess.PIPE)
+        out, err = p.communicate()
+
+        self.instance.results['opt_stats'] = ''.join([chr(i) for i in err])
+
+    def get_args_list(self):
+        args = [
+            OPT_PATH,
+            "-stats",
+            self.instance.opt,
+            self.instance.results['bitcode_path'],
+            "-o",
+            "/dev/null",
         ]
 
         return args

@@ -9,6 +9,7 @@ OUTPUT_ROOT = join(HOME, "diplomski/test_runs/")
 
 GCC_PATH = "/usr/bin/gcc"
 CLANG_PATH = join(LLVM_BUILD_ROOT, "build/bin/clang")
+OPT_PATH = join(LLVM_BUILD_ROOT, "build/bin/opt")
 
 INPUT_EXTENSION = ".c"
 HEADER_EXTENSION = ".h"

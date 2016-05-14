@@ -6,6 +6,7 @@ from PyQt4.QtGui import (
     QTableView,
     QAbstractItemView,
     QTextBrowser,
+    QFont,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -77,6 +78,13 @@ class InstanceView(QWidget):
         self.setLayout(self.layout)
 
         self.browser = QTextBrowser()
+
+        font = QFont()
+        font.setFamily('monospace')
+        font.setFixedPitch(True)
+        font.setStyleHint(QFont.TypeWriter)
+
+        self.browser.setCurrentFont(font)
         self.layout.addWidget(self.browser)
 
     def setInstance(self, instance):
@@ -91,12 +99,28 @@ class InstanceView(QWidget):
         self.browser.setText(report)
 
     def generate_report(self):
-        report = "Hello world!\n"
+        result_types = [
+            'bitcode_path',
+            'opt_stats',
+        ]
 
-        try:
-            report += self.instance.results['bitcode_path']
-        except:
-            pass
+        report = ""
 
+        for t in result_types:
+            try:
+                report += self.instance.results[t] + '\n'
+                report += "-"*10 + '\n'
+            except Exception as e:
+                pass
 
         return report
+
+class OptimStatsView(QTableView):
+    raw_report = None
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # self.stats_model = OptimStatsModel(raw)
+
+    def setStatsReport(self, report):
+        self.raw_report = report

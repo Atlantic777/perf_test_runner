@@ -147,7 +147,8 @@ class GUIApplication(Application, QObject):
 
         self._register_single_action('find_sources', FindSourcesAction)
         self._register_single_action('compile_instance', CompileInstanceAction)
-        self._register_single_action('generate_ll', GenerateBitcode)
+        self._register_single_action('generate_ll', GenerateBitcodeAction)
+        self._register_single_action('optim_stats', OptimiserStatsAction)
 
     def _register_single_action(self, name, action_class):
         self.actions[name] = action_class(self)
