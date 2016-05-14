@@ -21,23 +21,27 @@ from entity import *
 from actions import *
 
 class GUIApplication(Application, QObject):
+    selected_instance = None
+    selected_entity = None
+
     def __init__(self):
         super(Application, self).__init__()
         super(QObject, self).__init__()
 
         self.qApp = QApplication([])
-        self.w = QWidget()
 
+        # init main window widget
+        self.w = QWidget()
         self.w.resize(1300, 700)
         self.w.setWindowTitle("# Hello world!")
 
+        # other init routines
         self.setup_entity_manager()
         self.build_layout()
         self.register_actions()
+        self.connect_signals()
 
-        self.selected_instance = None
-        self.selected_entity = None
-
+        # fire find sources action
         self.actions['find_sources'].on_triggered()
 
         self.w.show()
@@ -50,33 +54,40 @@ class GUIApplication(Application, QObject):
         self.qApp.exec_()
 
     def build_layout(self):
-        self.layout = QVBoxLayout()
-        self.w.setLayout(self.layout)
+        self.layout = QVBoxLayout() # this is dummy layout for splitter
+        self.w.setLayout(self.layout) # set it
 
+        # this is actual layout
+        # it consist of:
+        # - job_list_view
+        # - entity_widget
+        #   - entity_view
+        #   - instance_view
+        # - instance_view
+        # - actions_pane
         self.main = QSplitter()
-        self.actions_pane = ActionsPane()
 
-        self.entity_widget = QSplitter(Qt.Vertical)
-
+        # setup job_list_view
         self.job_list_view = EntityManagerView(self.entity_manager)
+        self.job_list_view.width()
+        self.main.addWidget(self.job_list_view)
+
+        # setup entity widget
         self.entity_view = EntityView()
         self.instance_view = InstanceView()
-
-        self.main.addWidget(self.job_list_view)
-        self.job_list_view.width()
-
-        self.main.addWidget(self.entity_widget)
+        self.entity_widget = QSplitter(Qt.Vertical)
         self.entity_widget.addWidget(self.entity_view)
         self.entity_widget.addWidget(self.instance_view)
+        self.main.addWidget(self.entity_widget)
 
+        # setup actions pane
+        self.actions_pane = ActionsPane()
         self.main.addWidget(self.actions_pane)
 
         self.layout.addWidget(self.main)
 
         self.main.setSizes([250, 800, 250])
         self.entity_widget.setSizes([100, 600])
-
-        self.connect_signals()
 
     def connect_signals(self):
         entity_changed = self.job_list_view.entitySelectionChanged
