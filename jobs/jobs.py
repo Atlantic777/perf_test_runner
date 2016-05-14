@@ -70,8 +70,6 @@ class JobBase:
         return path.join(d, f)
 
 class CompilerJob(JobBase):
-    includes = None
-    instance = None
     output_extension = ".out"
 
     def __init__(self, instance, includes):
@@ -96,31 +94,17 @@ class CompilerJob(JobBase):
 
         return args
 
-class GenerateBitcodeJob:
+class GenerateBitcodeJob(JobBase):
+    output_extension = ".ll"
+    tag = "bitcode_path"
+
     def __init__(self, instance, includes):
-        self.instance = instance
-        self.out = self.get_output_path()
+        super().__init__(instance)
+
         self.includes = includes
+        self.out = self.get_output_path()
 
-    def run(self):
-        try:
-            subprocess.check_call(self.get_cmd_args_list(), stderr=subprocess.STDOUT)
-            self.instance.results['bitcode_path'] = self.out
-        except subprocess.CalledProcessError as e:
-            print(e)
-        except Exception as e:
-            print(e)
-
-    def get_output_path(self):
-        compiler = self.instance.compiler.name
-        optim = self.instance.opt
-
-        d = path.join(OUTPUT_ROOT, compiler, optim.strip('-').lower())
-        f = self.instance.parent.source.name.replace('.c', '.ll')
-
-        return path.join(d, f)
-
-    def get_cmd_args_list(self):
+    def get_args_list(self):
         args = [
             self.instance.compiler.path,
             "-emit-llvm",
@@ -133,15 +117,14 @@ class GenerateBitcodeJob:
 
         return args
 
-class GenerateOptimiserStatsJob:
-    def __init__(self, instance):
-        self.instance = instance
+    def collect_results(self, out=None, err=None):
+        self.instance.results[self.tag] = self.get_output_path()
 
-    def run(self):
-        p = subprocess.Popen(self.get_args_list(),  stderr=subprocess.PIPE)
-        out, err = p.communicate()
+class GenerateOptimiserStatsJob(JobBase):
+    tag = 'opt_stats'
 
-        self.instance.results['opt_stats'] = ''.join([chr(i) for i in err])
+    def collect_results(self, out, err):
+        self.instance.results[self.tag] = err
 
     def get_args_list(self):
         args = [
@@ -155,16 +138,11 @@ class GenerateOptimiserStatsJob:
 
         return args
 
+class PerfJob(JobBase):
+    tag = 'perf_stats'
 
-class PerfJob:
-    def __init__(self, instance):
-        self.instance = instance
-
-    def run(self):
-        p = subprocess.Popen(self.get_args_list(), stderr=subprocess.PIPE)
-        out, err = p.communicate()
-
-        self.instance.results['perf_stats'] = ''.join([chr(i) for i in err])
+    def collect_results(self, out, err):
+        self.instance.results[self.tag] = err
 
     def get_args_list(self):
         args = [
@@ -175,15 +153,11 @@ class PerfJob:
 
         return args
 
-class ExecutableSizeJob:
-    def __init__(self, instance):
-        self.instance = instance
+class ExecutableSizeJob(JobBase):
+    tag = 'executable_size'
 
-    def run(self):
-        p = subprocess.Popen(self.get_args_list(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        out, err = p.communicate()
-
-        self.instance.results['executable_size'] = ''.join([chr(i) for i in out])
+    def collect_results(self, out, err):
+        self.instance.results[self.tag] = out
 
     def get_args_list(self):
         args = [
@@ -193,15 +167,11 @@ class ExecutableSizeJob:
 
         return args
 
-class TimeExecutionJob:
-    def __init__(self, instance):
-        self.instance = instance
+class TimeExecutionJob(JobBase):
+    tag = 'execution_time'
 
-    def run(self):
-        p = subprocess.Popen(self.get_args_list(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        out, err = p.communicate()
-
-        self.instance.results['execution_time'] = ''.join([chr(i) for i in err])
+    def collect_results(self, out, err):
+        self.instance.results[self.tag] = err
 
     def get_args_list(self):
         args = [
