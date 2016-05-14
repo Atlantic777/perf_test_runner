@@ -42,13 +42,13 @@ class EntityManagerView(QListView):
 
 class EntityView(QTableView):
     instanceSelectionChanged = pyqtSignal(EntityInstance)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.entity_model = EntityTableModel()
         self.setModel(self.entity_model)
 
-        # self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
 
     @pyqtSlot(Entity)

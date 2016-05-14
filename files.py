@@ -4,6 +4,9 @@ of various files on disk
 """
 
 class File:
+    """
+    This is the base class for representing files on disk
+    """
     name = None
     path = None
 
@@ -18,7 +21,9 @@ class File:
         return self.name
 
 class Compiler(File):
+    """ Just an alias for the File class """
     pass
 
 class SourceFile(File):
+    """ Just an alias for the File class """
     pass
