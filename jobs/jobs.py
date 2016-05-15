@@ -94,9 +94,6 @@ class CompilerJob(JobBase):
         return args
 
 class GenerateBitcodeJob(JobBase):
-    output_extension = ".ll"
-    tag = "bitcode_path"
-
     def __init__(self, instance, includes):
         super().__init__(instance)
         self.includes = includes
@@ -120,17 +117,20 @@ class GenerateBitcodeJob(JobBase):
         self.result.save()
 
 class GenerateOptimiserStatsJob(JobBase):
-    tag = 'opt_stats'
+    def __init__(self, instance):
+        super().__init__(instance)
+        self.result = OptimiserStatsResult(self.instance)
 
     def collect_results(self, out, err):
-        self.instance.results[self.tag] = err
+        self.result.raw_output = err
+        self.result.save()
 
     def get_args_list(self):
         args = [
             OPT_PATH,
             "-stats",
             self.instance.opt,
-            self.instance.results['bitcode_path'],
+            self.instance.results[GenerateBitcodeResult.tag].action_output_file.full_path,
             "-o",
             "/dev/null",
         ]
@@ -138,44 +138,53 @@ class GenerateOptimiserStatsJob(JobBase):
         return args
 
 class PerfJob(JobBase):
-    tag = 'perf_stats'
+    def __init__(self, instance):
+        super().__init__(instance)
+        self.result = PerfResult(instance)
 
     def collect_results(self, out, err):
-        self.instance.results[self.tag] = err
+        self.result.raw_output = err
+        self.result.save()
 
     def get_args_list(self):
         args = [
             "perf",
             "stat",
-            self.instance.results['compilation_output_path']
+            self.instance.results[CompilationResult.tag].action_output_file.full_path
         ]
 
         return args
 
 class ExecutableSizeJob(JobBase):
-    tag = 'executable_size'
+    def __init__(self, instance):
+        super().__init__(instance)
+        self.result = ExecutableSizeResult(instance)
 
     def collect_results(self, out, err):
-        self.instance.results[self.tag] = out
+        self.result.raw_output = out
+        self.result.save()
 
     def get_args_list(self):
         args = [
             'size',
-            self.instance.results['compilation_output_path'],
+            self.instance.results[CompilationResult.tag].action_output_file.full_path,
         ]
 
         return args
 
 class TimeExecutionJob(JobBase):
-    tag = 'execution_time'
+    def __init__(self, instance):
+        super().__init__(instance)
+        self.result = TimeExecutionResult(instance)
 
     def collect_results(self, out, err):
-        self.instance.results[self.tag] = err
+        self.result.raw_output = err
+        self.result.save()
 
     def get_args_list(self):
         args = [
             'time',
-            self.instance.results['compilation_output_path'],
+            self.instance.results[CompilationResult.tag].action_output_file.full_path,
         ]
 
         return args

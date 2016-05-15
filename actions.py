@@ -10,6 +10,7 @@ from PyQt4.QtGui import QAction
 from settings import *
 
 from jobs import *
+from results import  *
 
 class MetaAction(QAction):
     """
@@ -55,6 +56,7 @@ class CompileInstanceAction(MetaAction):
             job = CompilerJob(instance, includes)
             job.run()
             self.parent().entity_view.refresh()
+            self.parent().instance_view.refresh()
 
 class GenerateBitcodeAction(MetaAction):
     """
@@ -86,7 +88,7 @@ class OptimiserStatsAction(MetaAction):
 
         if (
                 instance is None
-                or 'bitcode_path' not in instance.results
+                or GenerateBitcodeResult.tag not in instance.results
                 or instance.compiler.name != 'clang'
                 or instance.opt == '-O0'
         ):
@@ -108,7 +110,7 @@ class PerfAction(MetaAction):
 
         if (
                 instance is None
-                or 'compilation_output_path' not in instance.results
+                or CompilationResult.tag not in instance.results
         ):
             print("can't do that")
         else:
@@ -127,7 +129,7 @@ class SizeAction(MetaAction):
 
         if (
                 instance is None
-                or 'compilation_output_path' not in instance.results
+                or CompilationResult.tag not in instance.results
         ):
             print("can't do that")
         else:
@@ -147,7 +149,7 @@ class TimeAction(MetaAction):
 
         if (
                 instance is None
-                or 'compilation_output_path' not in instance.results
+                or CompilationResult.tag not in instance.results
         ):
             print("can't do that")
         else:

@@ -27,6 +27,8 @@ from models import (
     EntityTableModel,
 )
 
+from results import *
+
 class ActionsPane(QWidget):
     def __init__(self):
         super().__init__()
@@ -118,19 +120,29 @@ class InstanceView(QWidget):
 
     def generate_report(self):
         result_types = [
-            'bitcode_path',
-            'opt_stats',
-            'perf_stats',
-            'executable_size',
-            'execution_time',
+            CompilationResult,
+            GenerateBitcodeResult,
+            OptimiserStatsResult,
+            PerfResult,
+            ExecutableSizeResult,
+            TimeExecutionResult,
         ]
 
         report = ""
 
-        for t in result_types:
+        for t in [res.tag for res in result_types]:
             try:
-                report += self.instance.results[t] + '\n'
-                report += "-"*10 + '\n'
+                result = self.instance.results[t]
+
+                if result.action_output_file:
+                    report += result.action_output_file.full_path + '\n'
+                    report += "-"*10 + '\n'
+
+                if result.analysis_output_file:
+                   with open(result.analysis_output_file.full_path, "r")  as f:
+                        report += f.read() + '\n'
+                        report += "-"*10 + '\n'
+
             except Exception as e:
                 pass
 
