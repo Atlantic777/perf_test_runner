@@ -23,31 +23,28 @@ class Result:
     analysis_output_file = None
     action_output_file = None
 
+    def __init__(self, instance):
+        self.instance = instance
+        self.name = self.instance.parent.source.name
+
+        if self.extension:
+            self.action_output_file = self.get_action_output_file()
+
     def replaceExtension(self, extension):
         return self.name.replace('.c', extension)
 
-    # def getAnalysisOutputPath(self):
-    #     if tag:
-    #         res_name = self.replaceExtension(self.extension)
-    #         self.analysis_output = path.join(p, name)
+    def get_action_output_file(self):
+       p = self.instance.getOutputPath()
+       act_name = self.replaceExtension(self.extension)
 
-    #     return self.analysis_output
+       return File(p, act_name)
 
-
+    def save(self):
+        self.instance.results[self.tag] = self
 
 class CompilationResult(Result):
     extension = ".out"
     tag = "compilation"
-
-    def __init__(self, instance):
-       self.instance = instance
-       self.name = self.instance.parent.source.name
-
-       self.action_output_file = self.get_action_output_file()
-
-    def save(self):
-        self.instance.results[self.tag] = self
-        pass
 
     def load(self):
         if os.path.isfile(self.action_output_file.full_path):
@@ -56,12 +53,6 @@ class CompilationResult(Result):
         else:
             return False
 
-    def get_action_output_file(self):
-       p = self.instance.getOutputPath()
-       act_name = self.replaceExtension( self.extension)
-
-       return File(p, act_name)
-
-
-
-
+class GenerateBitcodeResult(Result):
+    extension = ".ll"
+    tag = "bitcode"

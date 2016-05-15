@@ -69,8 +69,6 @@ class JobBase:
         return path.join(d, f)
 
 class CompilerJob(JobBase):
-    output_extension = ".out"
-
     def __init__(self, instance, includes=None):
         super().__init__(instance)
 
@@ -82,14 +80,13 @@ class CompilerJob(JobBase):
         _hash = hashlib.md5(open(out, "rb").read()).hexdigest()
         self.instance._hash = _hash
 
+        self.result.save()
+
     def get_args_list(self):
         args = []
         args.append(self.instance.compiler.path)
         args.append("-lm")
-
-        if self.includes:
-            args += ['-I' + include_folder for include_folder in self.includes]
-
+        args += ['-I' + include_folder for include_folder in self.includes]
         args.append(self.instance.opt)
         args.append(self.instance.parent.source.path)
         args.append("-o" + self.result.action_output_file.full_path)
@@ -102,9 +99,9 @@ class GenerateBitcodeJob(JobBase):
 
     def __init__(self, instance, includes):
         super().__init__(instance)
-
         self.includes = includes
-        self.out = self.get_output_path()
+
+        self.result = GenerateBitcodeResult(self.instance)
 
     def get_args_list(self):
         args = [
@@ -113,14 +110,14 @@ class GenerateBitcodeJob(JobBase):
             "-S",
             "-O0",
             self.instance.parent.source.path,
-            "-o" + self.out,
+            "-o" + self.result.action_output_file.full_path,
         ]
         args += ['-I' + include_folder for include_folder in self.includes]
 
         return args
 
     def collect_results(self, out=None, err=None):
-        self.instance.results[self.tag] = self.get_output_path()
+        self.result.save()
 
 class GenerateOptimiserStatsJob(JobBase):
     tag = 'opt_stats'
