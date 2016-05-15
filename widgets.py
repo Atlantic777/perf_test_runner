@@ -71,8 +71,8 @@ class ActionButton(QWidget):
 
 
     def build_layout(self):
-        self.layout = QHBoxLayout()
-        self.checkbox = QCheckBox()
+        self.layout = QHBoxLayout(self)
+        self.checkbox = QCheckBox(self)
 
         self.button = QToolButton()
         self.button.setDefaultAction(self.action)
@@ -110,8 +110,13 @@ class ActionsPane(QWidget):
         self.group.addButton(button.checkbox)
         self.action_buttons.addWidget(button)
 
+    def getCheckedActions(self):
+        return [btn.parent().action for btn in self.group.buttons() if btn.isChecked()]
+
     def automate(self, event):
-        print("Automate!")
+        for action in self.getCheckedActions():
+            action.triggerIt()
+
 
 class EntityManagerView(QListView):
     entitySelectionChanged = pyqtSignal(Entity)

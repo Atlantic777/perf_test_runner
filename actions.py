@@ -26,6 +26,9 @@ class MetaAction(QAction):
         self.set_dependencies()
 
     def on_triggered(self, event):
+        self.triggerIt()
+
+    def triggerIt(self):
         scope_id = self.parent().getActionScopeId()
         instance_list = self.getInstances(scope_id)
 
@@ -36,6 +39,7 @@ class MetaAction(QAction):
                 print("Can't do that!")
 
         self.refresh_widgets()
+
 
     def getInstances(self, scope_id):
         if scope_id == 0:
