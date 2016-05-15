@@ -2,6 +2,7 @@
 Test source files, their instances and their manager:
 """
 from os import path
+from settings import OUTPUT_ROOT
 
 class Entity:
     """
@@ -48,12 +49,19 @@ class EntityInstance:
     def __repr__(self):
         return str( (self.parent.source.name, self.compiler.name, self.opt) )
 
+    def getOutputPath(self):
+        compiler = self.compiler.name
+        optim = self.opt
+
+        d = path.join(OUTPUT_ROOT, compiler, optim.strip('-').lower())
+        return d
+
 class EntityManager:
     """
     Collect all entities together
 
-    can discover source files
-    TODO: discover result files
+    - can discover source files
+    - can discover result files
     """
     entityList = []
     buildOptions = None
@@ -71,10 +79,11 @@ class EntityManager:
             self.entityList.append(Entity(source, self.buildOptions))
 
     def discover_result_files(self):
-        raise Exception("Not yet implemented!")
-
         for entity in self.entityList:
-            # guess result file path
-            # try to open it
-            # add to entity structure
-            pass
+            for instance in entity.instances:
+                self._load_existing_results(instance)
+
+
+    def _load_existing_results(self, instance):
+        raise Exception("Not implemented!")
+        pass

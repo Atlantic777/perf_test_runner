@@ -28,6 +28,8 @@ from settings import (
 import subprocess
 import hashlib
 
+from results import *
+
 class JobBase:
     tag = None
     output_extension = None
@@ -61,10 +63,7 @@ class JobBase:
         if self.output_extension is None:
             raise Exception("output extension is not set!")
 
-        compiler = self.instance.compiler.name
-        optim = self.instance.opt
-
-        d = path.join(OUTPUT_ROOT, compiler, optim.strip('-').lower())
+        d = self.instance.getOutputPath()
         f = self.instance.parent.source.name.replace('.c', self.output_extension)
 
         return path.join(d, f)
@@ -72,14 +71,14 @@ class JobBase:
 class CompilerJob(JobBase):
     output_extension = ".out"
 
-    def __init__(self, instance, includes):
+    def __init__(self, instance, includes=None):
         super().__init__(instance)
 
         self.includes = includes
-        self.instance.results['compilation_output_path'] = self.get_output_path()
+        self.result = CompilationResult(self.instance)
 
     def collect_results(self, out=None, err=None):
-        out = self.instance.results['compilation_output_path']
+        out = self.result.action_output_file.full_path
         _hash = hashlib.md5(open(out, "rb").read()).hexdigest()
         self.instance._hash = _hash
 
@@ -87,10 +86,13 @@ class CompilerJob(JobBase):
         args = []
         args.append(self.instance.compiler.path)
         args.append("-lm")
-        args += ['-I' + include_folder for include_folder in self.includes]
+
+        if self.includes:
+            args += ['-I' + include_folder for include_folder in self.includes]
+
         args.append(self.instance.opt)
         args.append(self.instance.parent.source.path)
-        args.append("-o" + self.get_output_path())
+        args.append("-o" + self.result.action_output_file.full_path)
 
         return args
 
