@@ -18,6 +18,7 @@ from PyQt4.QtGui import (
     QButtonGroup,
     QCheckBox,
     QSizePolicy,
+    QItemSelectionModel,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -59,7 +60,7 @@ class ActionsScope(QGroupBox):
             self.layout.addWidget(btn)
             self.group.addButton(btn, self.button_id[key])
 
-        self.group.button(0).setChecked(True)
+        self.group.button(2).setChecked(True)
 
 class ActionButton(QWidget):
     def __init__(self, action):
@@ -152,7 +153,9 @@ class EntityView(QTableView):
         self.instanceSelectionChanged.emit(instance)
 
     def refresh(self):
+        index = self.selectionModel().currentIndex()
         self.entity_model.endResetModel()
+        self.selectionModel().select(index, QItemSelectionModel.Select)
 
 
 class InstanceView(QWidget):

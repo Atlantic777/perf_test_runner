@@ -19,12 +19,71 @@ class MetaAction(QAction):
     Just define on_triggered function
     You can expect root window to be available in self.parent
     """
+
     def __init__(self, parent=None):
         super().__init__(self.title, parent, triggered=self.on_triggered)
         self.setParent(parent)
+        self.set_dependencies()
 
     def on_triggered(self, event):
-        print("Action not implemented!")
+        scope_id = self.parent().getActionScopeId()
+        instance_list = self.getInstances(scope_id)
+
+        for instance in instance_list:
+            if self.check_dependencies(instance) is True:
+                self.run(instance)
+            else:
+                print("Can't do that!")
+
+        self.refresh_widgets()
+
+    def getInstances(self, scope_id):
+        if scope_id == 0:
+            return list(self.parent().entity_manager.all_instances())
+        elif scope_id == 1:
+            if self.parent().selected_entity is None:
+                return []
+            else:
+                return list(self.parent().selected_entity.all_instances())
+        elif scope_id == 2:
+            instance = self.parent().selected_instance
+
+            if instance is not None:
+                return [instance]
+            else:
+                raise Exception("No instance selected!")
+
+    def check_dependencies(self, instance):
+        if self.dependencies is None:
+            return True
+        else:
+            are_ok = True
+
+            for dependency in self.dependencies:
+                are_ok = are_ok and dependency(instance)
+
+            return are_ok
+
+    def run(self, instance):
+        if self.JobClass is not None:
+            self.job = self.JobClass(instance)
+            self.job.run()
+
+    def is_clang(self, instance):
+        return (instance.compiler.name == "clang")
+
+    def has_bitcode(self, instance):
+        return GenerateBitcodeResult.tag in instance.results
+
+    def has_executable(self, instance):
+        return CompilationResult.tag in instance.results
+
+    def refresh_widgets(self):
+        self.parent().entity_view.refresh()
+        self.parent().instance_view.refresh()
+
+    def set_dependencies(self):
+        self.dependencies = None
 
 class FindSourcesAction(MetaAction):
     """
@@ -45,18 +104,11 @@ class CompileInstanceAction(MetaAction):
     """
     title = "Compile instance"
 
-    def on_triggered(self, event):
-        instance = self.parent().selected_instance
+    def run(self, instance):
         includes = self.parent().includes
+        job = CompilerJob(instance, includes)
+        job.run()
 
-        if instance is None:
-            print("No instance selected!")
-        else:
-            print(instance)
-            job = CompilerJob(instance, includes)
-            job.run()
-            self.parent().entity_view.refresh()
-            self.parent().instance_view.refresh()
 
 class GenerateBitcodeAction(MetaAction):
     """
@@ -64,16 +116,16 @@ class GenerateBitcodeAction(MetaAction):
     """
     title = "Generate LLVM IR"
 
-    def on_triggered(self, event):
-        instance = self.parent().selected_instance
-        includes = self.parent().includes
+    def set_dependencies(self):
+        self.dependencies = [
+            self.is_clang,
+        ]
 
-        if instance is None or instance.compiler.name != 'clang':
-            print("can't do that")
-        else:
-            job = GenerateBitcodeJob(instance, includes)
-            job.run()
-            self.parent().instance_view.refresh()
+    def run(self, instance):
+        includes = self.parent().includes
+        job = GenerateBitcodeJob(instance, includes)
+        job.run()
+
 
 class OptimiserStatsAction(MetaAction):
     """
@@ -82,77 +134,50 @@ class OptimiserStatsAction(MetaAction):
     Works only for LLVM -O{1,2,3,s} instances
     """
     title = "Get optimiser stats"
+    JobClass = GenerateOptimiserStatsJob
 
-    def on_triggered(self, event):
-        instance = self.parent().selected_instance
+    def set_dependencies(self):
+        self.dependencies = [
+            self.has_bitcode,
+            self.is_clang,
+            self.check_optim_level,
+        ]
 
-        if (
-                instance is None
-                or GenerateBitcodeResult.tag not in instance.results
-                or instance.compiler.name != 'clang'
-                or instance.opt == '-O0'
-        ):
-            print("can't do that")
-        else:
-            job = GenerateOptimiserStatsJob(instance)
-            job.run()
-            self.parent().instance_view.refresh()
-
+    def check_optim_level(self, instance):
+        return not instance.opt == '-O0'
 
 class PerfAction(MetaAction):
     """
     Measure execution performance stats (IPC!) with perf tool.
     """
     title = "Perf measuring stats"
+    JobClass = PerfJob
 
-    def on_triggered(self, event):
-        instance = self.parent().selected_instance
-
-        if (
-                instance is None
-                or CompilationResult.tag not in instance.results
-        ):
-            print("can't do that")
-        else:
-            job = PerfJob(instance)
-            job.run()
-            self.parent().instance_view.refresh()
+    def set_dependencies(self):
+        self.dependencies = [
+            self.has_executable,
+        ]
 
 class SizeAction(MetaAction):
     """
     Measure size of executable (ELF)
     """
     title = "Measure with size"
+    JobClass = ExecutableSizeJob
 
-    def on_triggered(self, event):
-        instance = self.parent().selected_instance
-
-        if (
-                instance is None
-                or CompilationResult.tag not in instance.results
-        ):
-            print("can't do that")
-        else:
-            job = ExecutableSizeJob(instance)
-            job.run()
-            self.parent().instance_view.refresh()
-
+    def set_dependencies(self):
+        self.dependencies = [
+            self.has_executable,
+        ]
 
 class TimeAction(MetaAction):
     """
     Measure execution time
     """
     title = "Measure execution time"
+    JobClass = TimeExecutionJob
 
-    def on_triggered(self, event):
-        instance = self.parent().selected_instance
-
-        if (
-                instance is None
-                or CompilationResult.tag not in instance.results
-        ):
-            print("can't do that")
-        else:
-            job = TimeExecutionJob(instance)
-            job.run()
-            self.parent().instance_view.refresh()
+    def set_dependencies(self):
+        self.dependencies = [
+            self.has_executable,
+        ]

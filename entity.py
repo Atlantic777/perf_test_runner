@@ -29,6 +29,11 @@ class Entity:
     def __str__(self):
         return self.source.name
 
+    def all_instances(self):
+        for comp_dict in self.instances.values():
+            for instance in comp_dict.values():
+                yield instance
+
 class EntityInstance:
     """
     Represents tuple (compiler, optimisation level) with
