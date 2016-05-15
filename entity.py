@@ -3,6 +3,7 @@ Test source files, their instances and their manager:
 """
 from os import path
 from settings import OUTPUT_ROOT
+from results import *
 
 class Entity:
     """
@@ -78,12 +79,29 @@ class EntityManager:
         for source in sourceList:
             self.entityList.append(Entity(source, self.buildOptions))
 
-    def discover_result_files(self):
-        for entity in self.entityList:
-            for instance in entity.instances:
-                self._load_existing_results(instance)
+        self.discover_result_files()
 
+    def discover_result_files(self):
+        for instance in self.all_instances():
+            self._load_existing_results(instance)
+
+    def all_instances(self):
+        for entity in self.entityList:
+            for opt in entity.instances.values():
+                for instance in opt.values():
+                    yield instance
 
     def _load_existing_results(self, instance):
-        raise Exception("Not implemented!")
-        pass
+        results = [
+            CompilationResult,
+            GenerateBitcodeResult,
+            OptimiserStatsResult,
+            PerfResult,
+            ExecutableSizeResult,
+            TimeExecutionResult,
+        ]
+
+        for Res in results:
+            r = Res(instance)
+            r.load()
+

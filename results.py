@@ -16,6 +16,7 @@ and stored in result model.
 """
 from files import File
 from os import path
+from utils import hash_of_file
 
 class Result:
     extension = None
@@ -58,10 +59,27 @@ class Result:
             with open(self.analysis_output_file.full_path, "w") as f:
                 f.write(self.raw_output)
 
+    def load(self):
+        action_out = self.has_output and path.isfile(self.action_output_file.full_path)
+        analysis_out = self.has_analysis and path.isfile(self.analysis_output_file.full_path)
+
+        if action_out or analysis_out:
+            self.instance.results[self.tag] = self
+            return True
+        else:
+            return False
+
+
 class CompilationResult(Result):
     extension = ".out"
     tag = "compilation"
     has_output = True
+
+    def load(self):
+        good = super().load()
+
+        if good is True:
+            self.instance._hash = hash_of_file(self.action_output_file.full_path)
 
 class GenerateBitcodeResult(Result):
     extension = ".ll"

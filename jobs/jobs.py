@@ -26,7 +26,7 @@ from settings import (
 )
 
 import subprocess
-import hashlib
+from utils import hashlib
 
 from results import *
 
@@ -77,7 +77,7 @@ class CompilerJob(JobBase):
 
     def collect_results(self, out=None, err=None):
         out = self.result.action_output_file.full_path
-        _hash = hashlib.md5(open(out, "rb").read()).hexdigest()
+        _hash = hash_of_file(out)
         self.instance._hash = _hash
 
         self.result.save()
