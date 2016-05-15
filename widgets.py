@@ -11,6 +11,9 @@ from PyQt4.QtGui import (
     QTextBrowser,
     QFont,
     QToolButton,
+    QGroupBox,
+    QRadioButton,
+    QButtonGroup,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -29,12 +32,42 @@ from models import (
 
 from results import *
 
+class ActionsScope(QGroupBox):
+    title = "Action scope"
+    button_id = {
+        '1 - everything': 0,
+        '2 - entity': 1,
+        '3 - instance': 2,
+    }
+
+    def __init__(self):
+        super().__init__(title=self.title)
+
+        self.group = QButtonGroup()
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        keys = list(self.button_id.keys())
+        keys.sort()
+
+        for key in keys:
+            btn = QRadioButton(key)
+            self.layout.addWidget(btn)
+            self.group.addButton(btn, self.button_id[key])
+
+        self.group.button(0).setChecked(True)
+
+
 class ActionsPane(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.scope_widget = ActionsScope()
+
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+
+        self.layout.addWidget(self.scope_widget)
         self.layout.addStretch()
 
     def registerAction(self, action):
