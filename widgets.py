@@ -6,14 +6,18 @@ from PyQt4.QtGui import (
     QWidget,
     QLabel,
     QVBoxLayout,
+    QHBoxLayout,
     QTableView,
     QAbstractItemView,
     QTextBrowser,
     QFont,
     QToolButton,
     QGroupBox,
+    QPushButton,
     QRadioButton,
     QButtonGroup,
+    QCheckBox,
+    QSizePolicy,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -57,24 +61,56 @@ class ActionsScope(QGroupBox):
 
         self.group.button(0).setChecked(True)
 
+class ActionButton(QWidget):
+    def __init__(self, action):
+        super().__init__()
+
+        self.action = action
+        self.build_layout()
+
+
+    def build_layout(self):
+        self.layout = QHBoxLayout()
+        self.checkbox = QCheckBox()
+
+        self.button = QToolButton()
+        self.button.setDefaultAction(self.action)
+        self.button.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Maximum)
+
+        self.layout.addWidget(self.checkbox)
+        self.layout.addWidget(self.button)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+        self.setLayout(self.layout)
+
 
 class ActionsPane(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.group = QButtonGroup()
+        self.group.setExclusive(False)
+
         self.scope_widget = ActionsScope()
+        self.action_buttons = QVBoxLayout()
+        self.big_red_button = QPushButton("Automate !!!", clicked=self.automate)
+        self.big_red_button.setStyleSheet("QPushButton { background-color : red}")
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
         self.layout.addWidget(self.scope_widget)
+        self.layout.addLayout(self.action_buttons)
         self.layout.addStretch()
+        self.layout.addWidget(self.big_red_button)
 
     def registerAction(self, action):
-        button = QToolButton()
-        button.setDefaultAction(action)
-        self.layout.addWidget(button)
+        button = ActionButton(action)
+        self.group.addButton(button.checkbox)
+        self.action_buttons.addWidget(button)
 
+    def automate(self, event):
+        print("Automate!")
 
 class EntityManagerView(QListView):
     entitySelectionChanged = pyqtSignal(Entity)
