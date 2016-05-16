@@ -38,7 +38,7 @@ from models import (
 )
 
 from results import *
-from result_widgets import *
+from .result_widgets import *
 
 class ActionsScope(QGroupBox):
     title = "Action scope"
