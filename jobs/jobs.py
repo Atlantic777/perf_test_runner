@@ -38,6 +38,11 @@ class JobBase:
         self.instance = instance
 
     def run(self):
+        if self.result.tag in self.instance.results:
+            return
+        else:
+            pass
+
         try:
             pipe = subprocess.PIPE
             args = self.get_args_list()
