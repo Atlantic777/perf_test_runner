@@ -19,6 +19,7 @@ from PyQt4.QtGui import (
     QCheckBox,
     QSizePolicy,
     QItemSelectionModel,
+    QHeaderView,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -142,6 +143,8 @@ class EntityView(QTableView):
         self.setModel(self.entity_model)
 
         self.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        self.verticalHeader().setResizeMode(QHeaderView.Stretch)
 
     @pyqtSlot(Entity)
     def entitySelectionChanged(self, entity):
