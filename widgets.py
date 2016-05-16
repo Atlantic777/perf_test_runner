@@ -20,6 +20,7 @@ from PyQt4.QtGui import (
     QSizePolicy,
     QItemSelectionModel,
     QHeaderView,
+    QTabWidget,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -166,7 +167,7 @@ class EntityView(QTableView):
         self.selectionModel().select(index, QItemSelectionModel.Select)
 
 
-class InstanceView(QWidget):
+class InstanceView(QTabWidget):
     instance = None
 
     def __init__(self, parent=None):
@@ -174,8 +175,13 @@ class InstanceView(QWidget):
         self.build_layout()
 
     def build_layout(self):
+        self.create_legacy_tab()
+
+    def create_legacy_tab(self):
+        self.legacy_report_widget = QWidget()
+
         self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.legacy_report_widget.setLayout(self.layout)
 
         self.browser = QTextBrowser()
 
@@ -186,6 +192,8 @@ class InstanceView(QWidget):
 
         self.browser.setCurrentFont(font)
         self.layout.addWidget(self.browser)
+
+        self.addTab(self.legacy_report_widget, "Legacy report")
 
     def setInstance(self, instance):
         self.instance = instance
@@ -198,35 +206,57 @@ class InstanceView(QWidget):
         report = self.generate_report()
         self.browser.setText(report)
 
-    def generate_report(self):
-        result_types = [
-            CompilationResult,
-            GenerateBitcodeResult,
-            OptimiserStatsResult,
-            PerfResult,
-            ExecutableSizeResult,
-            TimeExecutionResult,
-        ]
+    # def generate_report(self):
+    #     result_types = [
+    #         CompilationResult,
+    #         GenerateBitcodeResult,
+    #         OptimiserStatsResult,
+    #         PerfResult,
+    #         ExecutableSizeResult,
+    #         TimeExecutionResult,
+    #     ]
 
+    #     report = ""
+
+    #     for t in [res.tag for res in result_types]:
+    #         try:
+    #             result = self.instance.results[t]
+
+    #             if result.action_output_file:
+    #                 report += result.action_output_file.full_path + '\n'
+    #                 report += "-"*10 + '\n'
+
+    #             if result.analysis_output_file:
+    #                with open(result.analysis_output_file.full_path, "r")  as f:
+    #                     report += f.read() + '\n'
+    #                     report += "-"*10 + '\n'
+
+    #         except Exception as e:
+    #             pass
+
+    #     return report
+
+    def generate_report(self):
         report = ""
 
-        for t in [res.tag for res in result_types]:
-            try:
-                result = self.instance.results[t]
+        keys = list(self.instance.results.keys())
+        keys.sort()
 
-                if result.action_output_file:
-                    report += result.action_output_file.full_path + '\n'
-                    report += "-"*10 + '\n'
+        results = self.instance.results
 
-                if result.analysis_output_file:
-                   with open(result.analysis_output_file.full_path, "r")  as f:
-                        report += f.read() + '\n'
-                        report += "-"*10 + '\n'
+        for result_tag in keys:
+            this_result = results[result_tag]
 
-            except Exception as e:
-                pass
+            if this_result.has_output:
+                report += this_result.action_output_file.full_path + '\n'
+                report += "-"*10 + '\n'
+
+            if this_result.has_analysis:
+                report += this_result.raw_output + '\n'
+                report += "-"*10 + '\n'
 
         return report
+
 
 class OptimStatsView(QTableView):
     raw_report = None

@@ -63,6 +63,10 @@ class Result:
         action_out = self.has_output and path.isfile(self.action_output_file.full_path)
         analysis_out = self.has_analysis and path.isfile(self.analysis_output_file.full_path)
 
+        if analysis_out:
+            with open(self.analysis_output_file.full_path) as f:
+                self.raw_output = f.read()
+
         if action_out or analysis_out:
             self.instance.results[self.tag] = self
             return True
