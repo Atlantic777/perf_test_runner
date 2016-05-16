@@ -78,19 +78,19 @@ class Result:
         else:
             return False
 
-    def get_widget(self):
-        w = QTextBrowser()
+    # def get_widget(self):
+    #     w = QTextBrowser()
 
-        font = QFont()
-        font.setFamily('monospace')
-        font.setFixedPitch(True)
-        font.setStyleHint(QFont.TypeWriter)
-        w.setCurrentFont(font)
+    #     font = QFont()
+    #     font.setFamily('monospace')
+    #     font.setFixedPitch(True)
+    #     font.setStyleHint(QFont.TypeWriter)
+    #     w.setCurrentFont(font)
 
-        report = self.generate_report()
-        w.setText(report)
+    #     report = self.generate_report()
+    #     w.setText(report)
 
-        return w
+    #     return w
 
     def generate_report(self):
         report = ""

@@ -38,6 +38,7 @@ from models import (
 )
 
 from results import *
+from result_widgets import *
 
 class ActionsScope(QGroupBox):
     title = "Action scope"
@@ -170,34 +171,16 @@ class EntityView(QTableView):
 class InstanceView(QTabWidget):
     instance = None
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        # self.build_layout()
-
     def build_layout(self):
         self.clear()
+        factory = ResultWidgetFactory()
 
         self.create_legacy_tab()
-
         for result in self.instance.results.values():
-            self.addTab(result.get_widget(), result.tag)
+            self.addTab(factory.get_widget(result), result.tag)
 
     def create_legacy_tab(self):
-        self.legacy_report_widget = QWidget()
-
-        self.layout = QVBoxLayout()
-        self.legacy_report_widget.setLayout(self.layout)
-
-        self.browser = QTextBrowser()
-
-        font = QFont()
-        font.setFamily('monospace')
-        font.setFixedPitch(True)
-        font.setStyleHint(QFont.TypeWriter)
-
-        self.browser.setCurrentFont(font)
-        self.layout.addWidget(self.browser)
-
+        self.legacy_report_widget = LegacyResultReportWidget(self.instance)
         self.addTab(self.legacy_report_widget, "Legacy report")
 
     def setInstance(self, instance):
@@ -209,38 +192,3 @@ class InstanceView(QTabWidget):
             return
 
         self.build_layout()
-
-        report = self.generate_report()
-        self.browser.setText(report)
-
-    def generate_report(self):
-        report = ""
-
-        keys = list(self.instance.results.keys())
-        keys.sort()
-
-        results = self.instance.results
-
-        for result_tag in keys:
-            this_result = results[result_tag]
-
-            if this_result.has_output:
-                report += this_result.action_output_file.full_path + '\n'
-                report += "-"*10 + '\n'
-
-            if this_result.has_analysis:
-                report += this_result.raw_output + '\n'
-                report += "-"*10 + '\n'
-
-        return report
-
-
-class OptimStatsView(QTableView):
-    raw_report = None
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        # self.stats_model = OptimStatsModel(raw)
-
-    def setStatsReport(self, report):
-        self.raw_report = report
