@@ -92,5 +92,10 @@ class ResultExplorer(QSplitter):
     def set_instance(self, instance):
         self.selected_instance = instance
 
-    def getActionScopeId(self):
-        return self.actions_pane.scope_widget.group.checkedId()
+    def getActionScopes(self):
+        scopes = self.actions_pane.scope_widget.get_scopes()
+        return scopes
+
+        # return self.actions_pane.scope_widget.group.checkedId()
+
+

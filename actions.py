@@ -29,8 +29,8 @@ class MetaAction(QAction):
         self.triggerIt()
 
     def triggerIt(self):
-        scope_id = self.parent().getActionScopeId()
-        instance_list = self.getInstances(scope_id)
+        scopes = self.parent().getActionScopes()
+        instance_list = self.getInstances(scopes)
 
         for instance in instance_list:
             if self.check_dependencies(instance) is True:
@@ -41,21 +41,59 @@ class MetaAction(QAction):
         self.refresh_widgets()
 
 
-    def getInstances(self, scope_id):
-        if scope_id == 0:
-            return list(self.parent().entity_manager.all_instances())
-        elif scope_id == 1:
-            if self.parent().selected_entity is None:
-                return []
-            else:
-                return list(self.parent().selected_entity.all_instances())
-        elif scope_id == 2:
-            instance = self.parent().selected_instance
+    def getInstances(self, scopes):
+        entities = self._getEntities(scopes)
+        instances = self._filterInstances(entities, scopes)
 
-            if instance is not None:
-                return [instance]
-            else:
-                raise Exception("No instance selected!")
+        return instances
+
+    def _getEntities(self, scopes):
+        s = scopes['entity']
+
+        parent = self.parent()
+        entity_manager = parent.entity_manager
+
+        entities = None
+
+        if s == 0:
+            entities = entity_manager.all_instances()
+        elif (s == 1 or s == 2) and parent.selected_entity is not None:
+            entities = [ parent.selected_entity ]
+        else:
+            entities = []
+
+        return entities
+
+    def _filterInstances(self, entities, scopes):
+        final_instances_list = []
+
+        parent = self.parent()
+        selected_instance = parent.selected_entity
+        selected_entity = parent.selected_instance
+
+        if scopes['entity'] == 2 and selected_entity is not None:
+            return  [ selected_entity ]
+
+        for entity in entities:
+            instances = entity.all_instances()
+
+            for instance in instances:
+                if self._checkSingleInstance(instance, scopes):
+                    final_instances_list.append(instance)
+
+        return final_instances_list
+
+    def _checkSingleInstance(self, instance, scopes):
+        selected_compilers = scopes['compiler']
+        selected_optims = scopes['optimisation']
+
+        compiler_ok = instance.compiler.name in selected_compilers
+        optim_ok = instance.opt in selected_optims
+
+        if compiler_ok and optim_ok:
+            return True
+        else:
+            return False
 
     def check_dependencies(self, instance):
         if self.dependencies is None:

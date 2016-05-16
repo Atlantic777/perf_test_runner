@@ -21,6 +21,7 @@ from PyQt4.QtGui import (
     QItemSelectionModel,
     QHeaderView,
     QTabWidget,
+    QGridLayout,
 )
 from PyQt4.QtCore import (
     pyqtSlot,
@@ -40,30 +41,139 @@ from models import (
 from results import *
 from .result_widgets import *
 
-class ActionsScope(QGroupBox):
-    title = "Action scope"
-    button_id = {
-        '1 - everything': 0,
-        '2 - entity': 1,
-        '3 - instance': 2,
-    }
+from jobs import CompilerOptions
+
+class ScopeBox(QGroupBox):
+    title = None
+    button_type = None
 
     def __init__(self):
+        if self.title is None or self.button_type is None:
+            raise Exception("Still too abstract!")
+
         super().__init__(title=self.title)
 
+        self.populate_button_id()
+        self.build_layout()
+        self.populate_box()
+        self.select_default()
+
+        if self.button_type == 'check':
+            self.group.setExclusive(False)
+
+    def populate_button_id(self):
+        pass
+
+    def build_layout(self):
         self.group = QButtonGroup()
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
+    def populate_box(self):
         keys = list(self.button_id.keys())
         keys.sort()
 
+        BtnClass = None
+        if self.button_type == 'check':
+            BtnClass = QCheckBox
+        elif self.button_type == 'radio':
+            BtnClass = QRadioButton
+
         for key in keys:
-            btn = QRadioButton(key)
+            btn = BtnClass(key)
             self.layout.addWidget(btn)
             self.group.addButton(btn, self.button_id[key])
 
+    def select_default(self):
+        pass
+
+    def getSelection(self):
+        selection = None
+
+        if self.button_type == 'radio':
+            selection = self.group.checkedId()
+        elif self.button_type == 'check':
+            selection = []
+
+            for btn in self.group.buttons():
+                if btn.isChecked():
+                    selection.append(btn.text())
+
+        return selection
+
+class EntityScope(ScopeBox):
+    title = "Action scope"
+    button_type = 'radio'
+
+    def populate_button_id(self):
+        self.button_id = {
+            '1 - everything': 0,
+            '2 - entity': 1,
+            '3 - instance': 2,
+        }
+
+    def select_default(self):
         self.group.button(2).setChecked(True)
+
+class CompilerScope(ScopeBox):
+    title = "Compilers"
+    button_type = 'check'
+
+    def populate_button_id(self):
+        options = CompilerOptions()
+
+        self.button_id = {}
+
+        for i in range(len(options.compilers_list)):
+            compiler = options.compilers_list[i]
+            self.button_id[compiler.name] = i
+
+    def select_default(self):
+        for btn in self.group.buttons():
+            if btn.text() == 'clang':
+                btn.setChecked(True)
+
+class OptimisationScope(ScopeBox):
+    title = "Optimisations"
+    button_type = 'check'
+
+    def populate_button_id(self):
+        options = CompilerOptions()
+
+        self.button_id = {}
+
+        for (idx, level) in enumerate(options.optim_levels_list):
+            self.button_id[level] = idx
+
+    def select_default(self):
+        pass
+
+class ActionsScope(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.build_layout()
+
+    def build_layout(self):
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
+        self.entity_scope = EntityScope()
+        self.compiler_scope = CompilerScope()
+        self.optimisation_scope = OptimisationScope()
+
+        self.layout.addWidget(self.entity_scope, 0, 0, 1, 2)
+        self.layout.addWidget(self.compiler_scope, 1, 0, 1, 1)
+        self.layout.addWidget(self.optimisation_scope, 1, 1, 1, 1)
+
+    def get_scopes(self):
+        scopes = {}
+
+        scopes['entity'] = self.entity_scope.getSelection()
+        scopes['compiler'] = self.compiler_scope.getSelection()
+        scopes['optimisation'] = self.optimisation_scope.getSelection()
+
+        return scopes
 
 class ActionButton(QWidget):
     def __init__(self, action):
