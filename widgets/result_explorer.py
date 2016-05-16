@@ -35,6 +35,9 @@ class ResultExplorer(QSplitter):
 
         self.actions['find_sources'].on_triggered()
 
+        self.selected_entity = None
+        self.selected_instance = None
+
 
     def build_layout(self):
         # get job_list_view

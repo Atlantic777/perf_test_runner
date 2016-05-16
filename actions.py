@@ -58,28 +58,25 @@ class MetaAction(QAction):
         if s == 0:
             entities = entity_manager.all_instances()
         elif (s == 1 or s == 2) and parent.selected_entity is not None:
-            entities = [ parent.selected_entity ]
+            entities = parent.selected_entity.all_instances()
         else:
             entities = []
 
         return entities
 
-    def _filterInstances(self, entities, scopes):
+    def _filterInstances(self, instances, scopes):
         final_instances_list = []
 
         parent = self.parent()
-        selected_instance = parent.selected_entity
-        selected_entity = parent.selected_instance
+        selected_entity = parent.selected_entity
+        selected_instance = parent.selected_instance
 
-        if scopes['entity'] == 2 and selected_entity is not None:
-            return  [ selected_entity ]
+        if scopes['entity'] == 2 and selected_instance is not None:
+            return  [ selected_instance ]
 
-        for entity in entities:
-            instances = entity.all_instances()
-
-            for instance in instances:
-                if self._checkSingleInstance(instance, scopes):
-                    final_instances_list.append(instance)
+        for instance in instances:
+            if self._checkSingleInstance(instance, scopes):
+                final_instances_list.append(instance)
 
         return final_instances_list
 
