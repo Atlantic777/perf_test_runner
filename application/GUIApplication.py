@@ -2,6 +2,7 @@ from . import Application
 
 from widgets import (
     ResultExplorer,
+    QueryExplorer,
 )
 
 from PyQt4.QtGui import (
@@ -48,3 +49,6 @@ class GUIApplication(Application, QObject):
     def build_layout(self):
         self.result_explorer = ResultExplorer(self.entity_manager)
         self.w.addTab(self.result_explorer, "Result explorer")
+
+        self.query_explorer = QueryExplorer(self.entity_manager)
+        self.w.addTab(self.query_explorer, "Queries")

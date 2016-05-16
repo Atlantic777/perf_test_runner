@@ -192,3 +192,12 @@ class InstanceView(QTabWidget):
             return
 
         self.build_layout()
+
+class QueryListView(QListView):
+    pass
+
+class QueryDataView(QTableView):
+    pass
+
+class PlotView(QWidget):
+    pass
