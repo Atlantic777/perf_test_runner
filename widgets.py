@@ -172,10 +172,15 @@ class InstanceView(QTabWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.build_layout()
+        # self.build_layout()
 
     def build_layout(self):
+        self.clear()
+
         self.create_legacy_tab()
+
+        for result in self.instance.results.values():
+            self.addTab(result.get_widget(), result.tag)
 
     def create_legacy_tab(self):
         self.legacy_report_widget = QWidget()
@@ -203,38 +208,10 @@ class InstanceView(QTabWidget):
         if self.instance is None:
             return
 
+        self.build_layout()
+
         report = self.generate_report()
         self.browser.setText(report)
-
-    # def generate_report(self):
-    #     result_types = [
-    #         CompilationResult,
-    #         GenerateBitcodeResult,
-    #         OptimiserStatsResult,
-    #         PerfResult,
-    #         ExecutableSizeResult,
-    #         TimeExecutionResult,
-    #     ]
-
-    #     report = ""
-
-    #     for t in [res.tag for res in result_types]:
-    #         try:
-    #             result = self.instance.results[t]
-
-    #             if result.action_output_file:
-    #                 report += result.action_output_file.full_path + '\n'
-    #                 report += "-"*10 + '\n'
-
-    #             if result.analysis_output_file:
-    #                with open(result.analysis_output_file.full_path, "r")  as f:
-    #                     report += f.read() + '\n'
-    #                     report += "-"*10 + '\n'
-
-    #         except Exception as e:
-    #             pass
-
-    #     return report
 
     def generate_report(self):
         report = ""

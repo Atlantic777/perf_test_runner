@@ -18,6 +18,11 @@ from files import File
 from os import path
 from utils import hash_of_file
 
+from PyQt4.QtGui import (
+    QTextBrowser,
+    QFont,
+)
+
 class Result:
     extension = None
     tag = None
@@ -73,6 +78,32 @@ class Result:
         else:
             return False
 
+    def get_widget(self):
+        w = QTextBrowser()
+
+        font = QFont()
+        font.setFamily('monospace')
+        font.setFixedPitch(True)
+        font.setStyleHint(QFont.TypeWriter)
+        w.setCurrentFont(font)
+
+        report = self.generate_report()
+        w.setText(report)
+
+        return w
+
+    def generate_report(self):
+        report = ""
+
+        if self.has_output:
+            report += self.action_output_file.full_path + '\n'
+            report += "-"*10 + '\n'
+
+        if self.has_analysis:
+            report += self.raw_output + '\n'
+            report += "-"*10 + '\n'
+
+        return report
 
 class CompilationResult(Result):
     extension = ".out"
