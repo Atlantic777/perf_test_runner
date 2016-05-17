@@ -230,7 +230,6 @@ class ActionsPane(QWidget):
         for action in self.getCheckedActions():
             action.triggerIt()
 
-
 class EntityManagerView(QListView):
     entitySelectionChanged = pyqtSignal(Entity)
 

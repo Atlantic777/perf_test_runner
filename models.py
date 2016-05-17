@@ -10,6 +10,7 @@ from PyQt4.QtCore import (
 )
 
 from PyQt4 import QtCore
+from PyQt4 import QtGui
 
 class EntityManagerListModel(QAbstractListModel):
     def __init__(self, manager):
@@ -60,9 +61,15 @@ class EntityTableModel(QAbstractTableModel):
         if self.entity is None:
             return None
 
+        instance = self.getInstanceAt(index.row(), index.column())
+
         if role == QtCore.Qt.DisplayRole:
-            instance = self.getInstanceAt(index.row(), index.column())
             return instance.getHash()
+        if role == QtCore.Qt.BackgroundRole:
+            if instance.getHash() == "<hash>":
+                return QtGui.QBrush(QtGui.QColor("red"))
+            else:
+                return QtGui.QBrush(QtGui.QColor("lightGreen"))
         else:
             return None
 
