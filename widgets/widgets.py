@@ -244,6 +244,11 @@ class EntityManagerView(QListView):
         entity = self.model().manager.entityList[idx]
         self.entitySelectionChanged.emit(entity)
 
+    def refresh(self):
+        index = self.selectionModel().currentIndex()
+        self.manager_model.endResetModel()
+        self.selectionModel().select(index, QItemSelectionModel.Select)
+
 class EntityView(QTableView):
     instanceSelectionChanged = pyqtSignal(EntityInstance)
 

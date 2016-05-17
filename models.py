@@ -22,10 +22,29 @@ class EntityManagerListModel(QAbstractListModel):
         return count
 
     def data(self, index, role):
+        entity = self.manager.entityList[index.row()]
         if not index.isValid():
             return None
         if role == QtCore.Qt.DisplayRole:
-            return str(self.manager.entityList[index.row()])
+            return str(entity)
+        if role == QtCore.Qt.BackgroundRole:
+            has_any = False
+            has_all = True
+
+            for instance in entity.all_instances():
+                is_clang = instance.compiler.name == 'clang'
+                has_executable = 'compilation' in instance.results
+
+                if is_clang:
+                    has_any = has_any or has_executable
+                    has_all = has_all and has_executable
+
+            if has_all:
+                return QtGui.QBrush(QtGui.QColor("green"))
+            elif has_any:
+                return QtGui.QBrush(QtGui.QColor("lightGreen"))
+            else:
+                return None
         else:
             return None
 

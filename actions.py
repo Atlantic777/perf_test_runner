@@ -120,6 +120,7 @@ class MetaAction(QAction):
     def refresh_widgets(self):
         self.parent().entity_view.refresh()
         self.parent().instance_view.refresh()
+        self.parent().job_list_view.refresh()
 
     def set_dependencies(self):
         self.dependencies = None
