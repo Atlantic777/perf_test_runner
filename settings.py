@@ -20,5 +20,5 @@ HEADER_EXTENSION = ".h"
 
 EXCLUDE_LIST = [
     "polybench.c",
-    ".exptree.c",
+    "exptree.c",
 ]
