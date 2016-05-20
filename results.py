@@ -23,6 +23,8 @@ from PyQt4.QtGui import (
     QFont,
 )
 
+from result_parsers import *
+
 class Result:
     extension = None
     tag = None
@@ -31,6 +33,7 @@ class Result:
     raw_output = None
     has_output = False
     has_analysis = False
+    ParserClass = None
 
     def __init__(self, instance):
         self.instance = instance
@@ -91,6 +94,13 @@ class Result:
 
         return report
 
+    def parse(self):
+        if self.ParserClass is None:
+            raise Exception("parser is not implemented")
+        else:
+            parser = self.ParserClass(self.raw_output)
+            self.parsed_data = parser.values
+
 class CompilationResult(Result):
     extension = ".out"
     tag = "compilation"
@@ -111,9 +121,13 @@ class OptimiserStatsResult(Result):
     tag = "optimiser_stats"
     has_analysis = True
 
+    # for row in self.raw_results:
+    #     print(row)
+
 class PerfResult(Result):
     tag = "perf"
     has_analysis = True
+    ParserClass = PerfResultParser
 
 class ExecutableSizeResult(Result):
     tag = "executable_size"

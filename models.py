@@ -114,15 +114,14 @@ class EntityTableModel(QAbstractTableModel):
         return self.entity.instances[compiler][opt]
 
 class PerfQueryDataModel(QAbstractTableModel):
-    def __init__(self, parsed_perf_results):
+    def __init__(self, parsed_perf_results, column_titles):
         super().__init__()
         self.values = parsed_perf_results
 
         self.entity_titles = list(self.values.keys())
         self.entity_titles.sort()
 
-        self.columns = list(self.values[self.entity_titles[0]].keys())
-        self.columns.sort()
+        self.columns = column_titles
 
     def columnCount(self, index):
         return len(self.columns)
@@ -139,7 +138,7 @@ class PerfQueryDataModel(QAbstractTableModel):
 
 
         if role == QtCore.Qt.DisplayRole:
-            if col in [0, 1]:
+            if 'IPC' not in column_name:
                 return "{:>18,d}".format(entity_values[column_name])
             else:
                 return "{:>8.3f}".format(entity_values[column_name])
@@ -148,8 +147,6 @@ class PerfQueryDataModel(QAbstractTableModel):
 
         else:
             return None
-
-        print("asking for data finished")
 
     def headerData(self, section, orientation, role):
         if role == QtCore.Qt.DisplayRole:
