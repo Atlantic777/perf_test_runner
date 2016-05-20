@@ -112,3 +112,64 @@ class EntityTableModel(QAbstractTableModel):
         opt = self.optims[col]
 
         return self.entity.instances[compiler][opt]
+
+class PerfQueryDataModel(QAbstractTableModel):
+    def __init__(self, parsed_perf_results):
+        super().__init__()
+        self.values = parsed_perf_results
+
+        self.entity_titles = list(self.values.keys())
+        self.entity_titles.sort()
+
+        self.columns = list(self.values[self.entity_titles[0]].keys())
+        self.columns.sort()
+
+    def columnCount(self, index):
+        return len(self.columns)
+
+    def rowCount(self, index):
+        return len(self.entity_titles)
+
+    def data(self, index, role):
+        row = index.row()
+        col = index.column()
+
+        entity_values = self.getInstanceAt(row)
+        column_name = self.columns[col]
+
+
+        if role == QtCore.Qt.DisplayRole:
+            if col in [0, 1]:
+                return "{:>18,d}".format(entity_values[column_name])
+            else:
+                return "{:>8.3f}".format(entity_values[column_name])
+        elif role == QtCore.Qt.TextAlignmentRole:
+            return QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+
+        else:
+            return None
+
+        print("asking for data finished")
+
+    def headerData(self, section, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return self.columns[section]
+            elif orientation == QtCore.Qt.Vertical:
+                return self.entity_titles[section]
+
+    def getInstanceAt(self, row):
+        entity_title = self.entity_titles[row]
+        return self.values[entity_title]
+
+    def sort(self, column, order):
+        reverse_order = False
+
+        if order == QtCore.Qt.DescendingOrder:
+            reverse_order = True
+
+        l = lambda title: self.values[title][self.columns[column]]
+
+        self.beginResetModel()
+        self.entity_titles.sort(key=l, reverse=reverse_order)
+        self.endResetModel()
