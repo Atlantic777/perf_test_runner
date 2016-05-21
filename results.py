@@ -136,3 +136,4 @@ class ExecutableSizeResult(Result):
 class TimeExecutionResult(Result):
     tag = "execution_time"
     has_analysis = True
+    ParserClass = TimeExecutionParser
