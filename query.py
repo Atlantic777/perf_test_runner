@@ -75,7 +75,7 @@ class PerfQuery(Query):
         super().__init__(manager)
 
         self.entities = []
-        self.parsed_perf_results = {}
+        self.query_data = {}
 
         self.fetch_dataset()
         self.parse()
@@ -90,8 +90,6 @@ class PerfQuery(Query):
             self.parse_entity(entity)
 
     def build_columns(self):
-        self.query_data = {}
-
         for entity in self.entities:
             d = {}
 

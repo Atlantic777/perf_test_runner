@@ -55,4 +55,5 @@ class PerfResultParser:
 
                         self.values[tag] = value
         except:
-            print("can't parse " + tag)
+            # print("can't parse " + tag)
+            pass
