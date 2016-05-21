@@ -67,7 +67,6 @@ class Query:
         self.run_parsers(instances)
 
     def get_needed_instances(self, entity):
-
         instances = [i for i in entity.instances['clang'].values()]
         instances = [i for i in instances if i.opt in self.opts]
 
@@ -81,6 +80,8 @@ class Query:
         tag_not_present = [tag not in instance.results for tag in self.result_tags]
 
         if any(tag_not_present):
+            print(tag_not_present)
+            print(instance.results.keys())
             raise Exception("Some results are not available!")
         else:
             pass
@@ -96,6 +97,9 @@ class Query:
 
 class PerfQuery(Query):
     title = "perf results"
+    result_tags = ['perf']
+    opts = ['-O0', '-O1', '-O2', '-O3']
+    DataModelClass = ExecSizeQueryDataModel
 
     data_for_opt = lambda entity, opt: entity.instances['clang'][opt].results['perf'].parsed_data
 
@@ -123,15 +127,13 @@ class PerfQuery(Query):
         ('-O3 IPC', lambda entity: PerfQuery.ipc_for_opt(entity, '-O3')),
     ]
 
-    result_tags = ['perf']
-    opts = ['-O0', '-O1', '-O2', '-O3']
 
-    DataModelClass = ExecSizeQueryDataModel
 
 class ExecSizeQuery(Query):
     title = "size"
     opts = ['-O0', '-O1', '-O2', '-O3']
     result_tags = ['executable_size']
+    DataModelClass = ExecSizeQueryDataModel
 
     dec_for_opt = lambda entity, opt: entity.instances['clang'][opt].results['executable_size'].parsed_data['dec']
 
@@ -142,10 +144,23 @@ class ExecSizeQuery(Query):
         ('-O3 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O3')),
     ]
 
-    DataModelClass = ExecSizeQueryDataModel
 
 class ExecTimeQuery(Query):
     title = "time"
+    opts = ['-O0', '-O1', '-O2', '-O3']
+    result_tags = ['execution_time']
+    DataModelClass = ExecTimeQueryDataModel
 
-    def get_model(self):
-        return None
+    data_for_opt = lambda entity, opt: entity.instances['clang'][opt].results['execution_time'].parsed_data
+
+    user_time = lambda entity, opt: ExecTimeQuery.data_for_opt(entity, opt)['user']
+    system_time = lambda entity, opt: ExecTimeQuery.data_for_opt(entity, opt)['system']
+    elapsed_time = lambda entity, opt: ExecTimeQuery.data_for_opt(entity, opt)['elapsed']
+
+    columns = [
+        ('-O0 dec', lambda entity: ExecTimeQuery.user_time(entity, '-O0')),
+        ('-O1 dec', lambda entity: ExecTimeQuery.user_time(entity, '-O1')),
+        ('-O2 dec', lambda entity: ExecTimeQuery.user_time(entity, '-O2')),
+        ('-O3 dec', lambda entity: ExecTimeQuery.user_time(entity, '-O3')),
+    ]
+

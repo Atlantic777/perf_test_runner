@@ -138,10 +138,13 @@ class PerfQueryDataModel(QAbstractTableModel):
 
 
         if role == QtCore.Qt.DisplayRole:
-            if 'IPC' not in column_name:
-                return "{:>18,d}".format(entity_values[column_name])
-            else:
-                return "{:>8.3f}".format(entity_values[column_name])
+            try:
+                if 'IPC' not in column_name:
+                    return "{:>18,d}".format(entity_values[column_name])
+                else:
+                    return "{:>8.3f}".format(entity_values[column_name])
+            except:
+                return entity_values[column_name]
         elif role == QtCore.Qt.TextAlignmentRole:
             return QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
 
@@ -172,4 +175,7 @@ class PerfQueryDataModel(QAbstractTableModel):
         self.endResetModel()
 
 class ExecSizeQueryDataModel(PerfQueryDataModel):
+    pass
+
+class ExecTimeQueryDataModel(PerfQueryDataModel):
     pass

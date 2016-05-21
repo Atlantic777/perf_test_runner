@@ -95,6 +95,12 @@ class TimeExecutionParser:
                 for item in splitted_cols:
                     if tag in item:
                         value = item.strip(tag)
+
+                        try:
+                            value = float(value)
+                        except:
+                            pass
+
                         self.values[tag] = value
         except Exception as e:
             print(e)

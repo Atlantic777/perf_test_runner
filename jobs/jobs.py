@@ -183,7 +183,7 @@ class TimeExecutionJob(JobBase):
         self.result = TimeExecutionResult(instance)
 
     def collect_results(self, out, err):
-        self.result.raw_output = err
+        self.result.raw_output = '\n'.join(err.split('\n')[-3:])
         self.result.save()
 
     def get_args_list(self):
