@@ -170,3 +170,6 @@ class PerfQueryDataModel(QAbstractTableModel):
         self.beginResetModel()
         self.entity_titles.sort(key=l, reverse=reverse_order)
         self.endResetModel()
+
+class ExecSizeQueryDataModel(PerfQueryDataModel):
+    pass

@@ -2,7 +2,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
 from result_parsers import *
-from models import PerfQueryDataModel
+from models import *
 
 class QueryManager:
     queries = {}
@@ -11,6 +11,7 @@ class QueryManager:
     def __init__(self, parent):
         reg = self.register_single
         reg(PerfQuery)
+        reg(ExecTimeQuery)
         reg(ExecSizeQuery)
 
         self.parent = parent
@@ -70,6 +71,7 @@ class PerfQuery(Query):
     ]
 
     result_tags = ['perf']
+    opts = ['-O0', '-O1', '-O2', '-O3']
 
     def __init__(self, manager):
         super().__init__(manager)
@@ -106,10 +108,9 @@ class PerfQuery(Query):
         self.run_parsers(instances)
 
     def get_needed_instances(self, entity):
-        opts = ['-O0', '-O1', '-O2', '-O3']
 
         instances = [i for i in entity.instances['clang'].values()]
-        instances = [i for i in instances if i.opt in opts]
+        instances = [i for i in instances if i.opt in self.opts]
 
         return instances
 
@@ -137,6 +138,85 @@ class PerfQuery(Query):
 
 class ExecSizeQuery(Query):
     title = "size"
+    opts = ['-O0', '-O1', '-O2', '-O3']
+    result_tags = ['executable_size']
+
+    dec_for_opt = lambda entity, opt: entity.instances['clang'][opt].results['executable_size'].parsed_data['dec']
+
+    columns = [
+        ('-O0 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O0')),
+        ('-O1 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O1')),
+        ('-O2 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O2')),
+        ('-O3 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O3')),
+    ]
+
+    def __init__(self, manager):
+        super().__init__(manager)
+
+        self.entities = []
+        self.query_data = {}
+
+        self.fetch_dataset()
+        self.parse()
+        self.build_columns()
+
+    # ---------- first level methods -----------------
+    def fetch_dataset(self):
+        self.entities = self.entity_manager.entityList
+
+    def parse(self):
+        for entity in self.entities:
+            self.parse_entity(entity)
+
+    def build_columns(self):
+        for entity in self.entities:
+            d = {}
+
+            for (col_title, col_function) in self.columns:
+                d[col_title] = col_function(entity)
+
+            self.query_data[entity.source.name] = d
+    # ------------ end of first level methods ----------
+
+    # ------------- parsing phase ---------------------
+    def parse_entity(self, entity):
+        instances = self.get_needed_instances(entity)
+        self.check_instance_results_presence(instances)
+        self.run_parsers(instances)
+
+    def get_needed_instances(self, entity):
+        instances = [i for i in entity.instances['clang'].values()]
+        instances = [i for i in instances if i.opt in self.opts]
+
+        return instances
+
+    def check_instance_results_presence(self, instances):
+        for i in instances:
+            self.results_available_for_instance(i)
+
+    def results_available_for_instance(self, instance):
+        tag_not_present = [tag not in instance.results for tag in self.result_tags]
+
+        if any(tag_not_present):
+            raise Exception("Some results are not available!")
+        else:
+            pass
+
+    def run_parsers(self, instances):
+        for i in instances:
+            for tag in self.result_tags:
+                i.results[tag].parse()
+
+    # ---------- end of parsing phase methods ----------------
+
+    def get_model(self):
+        column_titles = [col[0] for col in self.columns]
+        # return None
+        return ExecSizeQueryDataModel(self.query_data, column_titles)
+
+
+class ExecTimeQuery(Query):
+    title = "time"
 
     def get_model(self):
         return None

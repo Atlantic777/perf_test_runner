@@ -29,5 +29,5 @@ def scratch():
         print("{:<10} : {:>20}".format(tag, res.parsed_data[tag]))
 
 if __name__ == "__main__":
-    # main()
-    scratch()
+    main()
+    # scratch()

@@ -34,6 +34,7 @@ class Result:
     has_output = False
     has_analysis = False
     ParserClass = None
+    parsed_data = None
 
     def __init__(self, instance):
         self.instance = instance

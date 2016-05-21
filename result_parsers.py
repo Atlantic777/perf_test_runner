@@ -134,10 +134,18 @@ class ExecutableSizeParser:
         try:
             for tag in self.columns:
                 idx  = column_names.index(tag)
-                self.values[tag] = column_values[idx]
+                val = column_values[idx]
+
+                try:
+                    val = int(val)
+                except:
+                    pass
+
+                self.values[tag] = val
         except Exception as e:
             print(e)
             print(self.raw_results)
             print(splitted_rows)
             print(column_names)
             print(column_values)
+

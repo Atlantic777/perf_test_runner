@@ -95,6 +95,8 @@ class QueryExplorer(QSplitter):
         axes = self.query_widget.axes
         canvas = self.query_widget.canvas
 
+        axes.clear()
+
         # construct list of 4-value arrays
         for entity_title in query_data:
             d = []
