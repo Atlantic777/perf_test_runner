@@ -31,15 +31,68 @@ class QueryManager:
 
 class Query:
     title = None
+    DataModelClass = None
 
     def __init__(self, entity_manager):
-        if self.title is None:
+        if self.title is None or self.DataModelClass is None:
             raise Exception("too abstract!")
 
         self.entity_manager = entity_manager
 
+        self.entities = self.entity_manager.entityList
+        self.query_data = {}
+
+        self.parse()
+        self.build_columns()
+
     def get_model(self):
         raise Exception("too abstract")
+
+    def parse(self):
+        for entity in self.entities:
+            self.parse_entity(entity)
+
+    def build_columns(self):
+        for entity in self.entities:
+            d = {}
+
+            for (col_title, col_function) in self.columns:
+                d[col_title] = col_function(entity)
+
+            self.query_data[entity.source.name] = d
+
+    def parse_entity(self, entity):
+        instances = self.get_needed_instances(entity)
+        self.check_instance_results_presence(instances)
+        self.run_parsers(instances)
+
+    def get_needed_instances(self, entity):
+
+        instances = [i for i in entity.instances['clang'].values()]
+        instances = [i for i in instances if i.opt in self.opts]
+
+        return instances
+
+    def check_instance_results_presence(self, instances):
+        for i in instances:
+            self.results_available_for_instance(i)
+
+    def results_available_for_instance(self, instance):
+        tag_not_present = [tag not in instance.results for tag in self.result_tags]
+
+        if any(tag_not_present):
+            raise Exception("Some results are not available!")
+        else:
+            pass
+
+    def run_parsers(self, instances):
+        for i in instances:
+            for tag in self.result_tags:
+                i.results[tag].parse()
+
+    def get_model(self):
+        column_titles = [col[0] for col in self.columns]
+        return self.DataModelClass(self.query_data, column_titles)
 
 class PerfQuery(Query):
     title = "perf results"
@@ -73,68 +126,7 @@ class PerfQuery(Query):
     result_tags = ['perf']
     opts = ['-O0', '-O1', '-O2', '-O3']
 
-    def __init__(self, manager):
-        super().__init__(manager)
-
-        self.entities = []
-        self.query_data = {}
-
-        self.fetch_dataset()
-        self.parse()
-        self.build_columns()
-
-    # -----------  first level methods ----------------------
-    def fetch_dataset(self):
-        self.entities = self.entity_manager.entityList
-
-    def parse(self):
-        for entity in self.entities:
-            self.parse_entity(entity)
-
-    def build_columns(self):
-        for entity in self.entities:
-            d = {}
-
-            for (col_title, col_function) in self.columns:
-                d[col_title] = col_function(entity)
-
-            self.query_data[entity.source.name] = d
-    # ----------- end of first level methods -----------------
-
-    # ---------- parsing phase -------------------
-    def parse_entity(self, entity):
-        instances = self.get_needed_instances(entity)
-        self.check_instance_results_presence(instances)
-        self.run_parsers(instances)
-
-    def get_needed_instances(self, entity):
-
-        instances = [i for i in entity.instances['clang'].values()]
-        instances = [i for i in instances if i.opt in self.opts]
-
-        return instances
-
-    def check_instance_results_presence(self, instances):
-        for i in instances:
-            self.results_available_for_instance(i)
-
-    def results_available_for_instance(self, instance):
-        tag_not_present = [tag not in instance.results for tag in self.result_tags]
-
-        if any(tag_not_present):
-            raise Exception("Some results are not available!")
-        else:
-            pass
-
-    def run_parsers(self, instances):
-        for i in instances:
-            for tag in self.result_tags:
-                i.results[tag].parse()
-    # ------ end of parsing phase methods ------------------
-
-    def get_model(self):
-        column_titles = [col[0] for col in self.columns]
-        return PerfQueryDataModel(self.query_data, column_titles)
+    DataModelClass = ExecSizeQueryDataModel
 
 class ExecSizeQuery(Query):
     title = "size"
@@ -150,70 +142,7 @@ class ExecSizeQuery(Query):
         ('-O3 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O3')),
     ]
 
-    def __init__(self, manager):
-        super().__init__(manager)
-
-        self.entities = []
-        self.query_data = {}
-
-        self.fetch_dataset()
-        self.parse()
-        self.build_columns()
-
-    # ---------- first level methods -----------------
-    def fetch_dataset(self):
-        self.entities = self.entity_manager.entityList
-
-    def parse(self):
-        for entity in self.entities:
-            self.parse_entity(entity)
-
-    def build_columns(self):
-        for entity in self.entities:
-            d = {}
-
-            for (col_title, col_function) in self.columns:
-                d[col_title] = col_function(entity)
-
-            self.query_data[entity.source.name] = d
-    # ------------ end of first level methods ----------
-
-    # ------------- parsing phase ---------------------
-    def parse_entity(self, entity):
-        instances = self.get_needed_instances(entity)
-        self.check_instance_results_presence(instances)
-        self.run_parsers(instances)
-
-    def get_needed_instances(self, entity):
-        instances = [i for i in entity.instances['clang'].values()]
-        instances = [i for i in instances if i.opt in self.opts]
-
-        return instances
-
-    def check_instance_results_presence(self, instances):
-        for i in instances:
-            self.results_available_for_instance(i)
-
-    def results_available_for_instance(self, instance):
-        tag_not_present = [tag not in instance.results for tag in self.result_tags]
-
-        if any(tag_not_present):
-            raise Exception("Some results are not available!")
-        else:
-            pass
-
-    def run_parsers(self, instances):
-        for i in instances:
-            for tag in self.result_tags:
-                i.results[tag].parse()
-
-    # ---------- end of parsing phase methods ----------------
-
-    def get_model(self):
-        column_titles = [col[0] for col in self.columns]
-        # return None
-        return ExecSizeQueryDataModel(self.query_data, column_titles)
-
+    DataModelClass = ExecSizeQueryDataModel
 
 class ExecTimeQuery(Query):
     title = "time"
