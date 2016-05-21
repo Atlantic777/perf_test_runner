@@ -301,19 +301,28 @@ class EntityView(QTableView):
             raise Exception("Can't autoselect such instance")
 
 class InstanceView(QTabWidget):
-    instance = None
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.instance = None
+        self.last_selected_tab = None
+        self.currentChanged.connect(self.set_recent_tab)
+        self.widgets = {}
 
     def build_layout(self):
         self.clear()
         factory = ResultWidgetFactory()
 
+        self.widgets = {}
         self.create_legacy_tab()
         for result in self.instance.results.values():
-            self.addTab(factory.get_widget(result), result.tag)
+            idx = self.addTab(factory.get_widget(result), result.tag)
+            self.widgets[result.tag] = idx
 
     def create_legacy_tab(self):
         self.legacy_report_widget = LegacyResultReportWidget(self.instance)
-        self.addTab(self.legacy_report_widget, "Legacy report")
+        idx = self.addTab(self.legacy_report_widget, "Legacy report")
+        self.widgets["Legacy report"] = idx
 
     def setInstance(self, instance):
         self.instance = instance
@@ -323,4 +332,26 @@ class InstanceView(QTabWidget):
         if self.instance is None:
             return
 
+        self.currentChanged.disconnect(self.set_recent_tab)
         self.build_layout()
+        self.currentChanged.connect(self.set_recent_tab)
+
+        self.select_recent_tab()
+
+    def select_recent_tab(self):
+        try:
+            if self.last_selected_tab is None:
+                self.setCurrentIndex(self.widgets["Legacy report"])
+            else:
+                self.setCurrentIndex(self.widgets[self.last_selected_tab])
+        except Exception as e:
+            print(e)
+
+    @pyqtSlot(int)
+    def set_recent_tab(self, idx):
+        try:
+            w = self.currentWidget()
+            tag = w.result.tag
+            self.last_selected_tab = tag
+        except Exception as e:
+            print(e)
