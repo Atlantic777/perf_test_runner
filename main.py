@@ -22,12 +22,12 @@ def scratch():
     manager.createEntityList(source_list)
 
     instance = manager.entityList[0].instances['clang']['-O3']
-    res = instance.results['execution_time']
+    res = instance.results['executable_size']
     res.parse()
 
     for tag in res.parsed_data:
         print("{:<10} : {:>20}".format(tag, res.parsed_data[tag]))
 
 if __name__ == "__main__":
-    main()
-    # scratch()
+    # main()
+    scratch()

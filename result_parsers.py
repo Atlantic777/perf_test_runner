@@ -98,3 +98,46 @@ class TimeExecutionParser:
                         self.values[tag] = value
         except Exception as e:
             print(e)
+
+class ExecutableSizeParser:
+    columns = [
+        'text',
+        'data',
+        'bss',
+        'dec',
+    ]
+
+    def __init__(self, raw_results=None):
+        if raw_results is None:
+            return False
+
+        self.values = {}
+
+        self.raw_results = raw_results
+        self.raw_results_ref = raw_results
+
+        self.parse()
+
+    def parse(self):
+        self.strip_header()
+        self.extract_data()
+
+    def strip_header(self):
+        pass
+
+    def extract_data(self):
+        self.raw_results = self.raw_results.replace(' ', '')
+        splitted_rows = self.raw_results.split('\n')
+        column_names = splitted_rows[0].split('\t')
+        column_values = splitted_rows[1].split('\t')
+
+        try:
+            for tag in self.columns:
+                idx  = column_names.index(tag)
+                self.values[tag] = column_values[idx]
+        except Exception as e:
+            print(e)
+            print(self.raw_results)
+            print(splitted_rows)
+            print(column_names)
+            print(column_values)
