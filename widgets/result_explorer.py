@@ -1,6 +1,7 @@
 from PyQt4.QtGui import (
     QWidget,
     QSplitter,
+    QItemSelectionModel,
 )
 
 from PyQt4.QtCore import (
@@ -37,6 +38,8 @@ class ResultExplorer(QSplitter):
 
         self.selected_entity = None
         self.selected_instance = None
+
+        self.instance_type = None
 
 
     def build_layout(self):
@@ -91,9 +94,13 @@ class ResultExplorer(QSplitter):
         self.selected_entity = entity
         self.selected_instance = None
 
+        if self.instance_type is not None:
+            self.entity_view.selectInstanceType(self.instance_type)
+
     @pyqtSlot(EntityInstance)
     def set_instance(self, instance):
         self.selected_instance = instance
+        self.instance_type = (instance.compiler.name, instance.opt)
 
     def getActionScopes(self):
         scopes = self.actions_pane.scope_widget.get_scopes()

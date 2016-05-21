@@ -281,6 +281,24 @@ class EntityView(QTableView):
         self.entity_model.endResetModel()
         self.selectionModel().select(index, QItemSelectionModel.Select)
 
+    def selectInstanceType(self, instance_type):
+        (compiler, opt_level) = instance_type
+
+        row = None
+        col = None
+
+        options = CompilerOptions()
+        optim_levels = options.optim_levels_list
+        compiler_names = sorted( [compiler.name for compiler in options.compilers_list] )
+
+        try:
+            row = compiler_names.index(compiler)
+            col = optim_levels.index(opt_level)
+
+            idx = self.model().index(row, col)
+            self.selectionModel().select(idx, QItemSelectionModel.Select)
+        except:
+            raise Exception("Can't autoselect such instance")
 
 class InstanceView(QTabWidget):
     instance = None
