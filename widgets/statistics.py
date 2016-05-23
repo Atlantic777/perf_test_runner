@@ -41,6 +41,7 @@ class QueryDataTableView(QTableView):
         super().__init__()
         self.setSortingEnabled(True)
         self.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        self.verticalHeader().setVisible(False)
 
 class QueryWidget(QSplitter):
     def __init__(self, parent):

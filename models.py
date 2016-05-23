@@ -124,20 +124,23 @@ class PerfQueryDataModel(QAbstractTableModel):
         self.columns = column_titles
 
     def columnCount(self, index):
-        return len(self.columns)
+        return len(self.columns) + 1
 
     def rowCount(self, index):
         return len(self.entity_titles)
 
     def data(self, index, role):
         row = index.row()
-        col = index.column()
+        col = index.column()-1
 
         entity_values = self.getInstanceAt(row)
         column_name = self.columns[col]
 
 
         if role == QtCore.Qt.DisplayRole:
+            if col == -1:
+                return self.entity_titles[row]
+
             try:
                 if 'IPC' not in column_name:
                     return "{:>18,d}".format(entity_values[column_name])
@@ -154,9 +157,12 @@ class PerfQueryDataModel(QAbstractTableModel):
     def headerData(self, section, orientation, role):
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
-                return self.columns[section]
-            elif orientation == QtCore.Qt.Vertical:
-                return self.entity_titles[section]
+                if section == 0:
+                    return "Test name"
+                else:
+                    return self.columns[section-1]
+        else:
+            return None
 
     def getInstanceAt(self, row):
         entity_title = self.entity_titles[row]
@@ -164,6 +170,7 @@ class PerfQueryDataModel(QAbstractTableModel):
 
     def sort(self, column, order):
         reverse_order = False
+        column = column - 1
 
         if order == QtCore.Qt.DescendingOrder:
             reverse_order = True
