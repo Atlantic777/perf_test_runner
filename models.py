@@ -63,14 +63,14 @@ class EntityTableModel(QAbstractTableModel):
     def __str__(self):
         return self.entity.source.name + " " + self.entity.source.path
 
-    def columnCount(self, index):
+    def columnCount(self, index=None):
         if self.entity is None:
             return 0
         else:
             cols =  max([len(opts) for opts in self.entity.instances.values()])
             return cols # the one for compiler name
 
-    def rowCount(self, index):
+    def rowCount(self, index=None):
         if self.entity is None:
             return 0
         else:
@@ -123,10 +123,10 @@ class PerfQueryDataModel(QAbstractTableModel):
 
         self.columns = column_titles
 
-    def columnCount(self, index):
+    def columnCount(self, index=None):
         return len(self.columns) + 1
 
-    def rowCount(self, index):
+    def rowCount(self, index=None):
         return len(self.entity_titles)
 
     def data(self, index, role):

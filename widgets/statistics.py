@@ -5,12 +5,8 @@ from PyQt4.QtCore import (
     pyqtSignal,
 )
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-
 from query import *
+from query_widget import *
 
 class QueryListView(QListView):
     query_changed = pyqtSignal(Query)
@@ -35,45 +31,6 @@ class QueryListView(QListView):
 
         query = self.query_manager.get(title)
         self.query_changed.emit(query)
-
-class QueryDataTableView(QTableView):
-    def __init__(self):
-        super().__init__()
-        self.setSortingEnabled(True)
-        self.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
-        self.verticalHeader().setVisible(False)
-
-class QueryWidget(QSplitter):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setOrientation(Qt.Horizontal)
-
-        self.query = None
-
-        self.table = QueryDataTableView()
-
-        self.scrollable = QScrollArea()
-        self.addWidget(self.table)
-        self.addWidget(self.scrollable)
-
-    def set_query(self, query):
-        self.query = query
-
-        self.table.setModel(self.query.get_model())
-
-        w = self.get_plot_list_widget()
-        self.scrollable.setWidget(w)
-
-    def get_plot_list_widget(self):
-        w = QWidget()
-        l = QVBoxLayout()
-        w.setLayout(l)
-
-        plot_list = self.query.get_plots()
-        for plot in plot_list:
-            l.addWidget(plot)
-
-        return w
 
 class QueryExplorer(QSplitter):
     def __init__(self, entity_manager):
