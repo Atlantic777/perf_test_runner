@@ -46,7 +46,7 @@ class QueryDataTableView(QTableView):
 class QueryWidget(QSplitter):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setOrientation(Qt.Vertical)
+        self.setOrientation(Qt.Horizontal)
 
         p = parent
         self.fig = Figure()

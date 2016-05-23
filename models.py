@@ -143,9 +143,9 @@ class PerfQueryDataModel(QAbstractTableModel):
 
             try:
                 if 'IPC' not in column_name:
-                    return "{:>18,d}".format(entity_values[column_name])
+                    return "{:>,d}".format(entity_values[column_name])
                 else:
-                    return "{:>8.3f}".format(entity_values[column_name])
+                    return "{:>.3f}".format(entity_values[column_name])
             except:
                 return entity_values[column_name]
         elif role == QtCore.Qt.TextAlignmentRole:
