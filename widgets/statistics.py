@@ -97,6 +97,8 @@ class QueryExplorer(QSplitter):
 
         axes.clear()
 
+        num_cols = len(columns)
+
         # construct list of 4-value arrays
         for entity_title in query_data:
             d = []
@@ -107,6 +109,12 @@ class QueryExplorer(QSplitter):
             d = np.array(d)
             d = np.max(d) / d
 
-            axes.plot([0, 1, 2, 3], d, 'r')
+            axes.plot(range(num_cols), d, 'r')
+
+
+        x_axis = axes.get_xaxis()
+
+        x_axis.set_ticks(range(num_cols))
+        x_axis.set_ticklabels([col_title for (col_title, function) in columns])
 
         canvas.draw()
