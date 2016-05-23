@@ -56,8 +56,21 @@ class QueryWidget(QSplitter):
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(p)
 
+        self.scrollable = QScrollArea()
+        w = QWidget()
+        self.plot_layout = QVBoxLayout()
+        w.setLayout(self.plot_layout)
+
+        self.plot_layout.addWidget(self.canvas)
+        self.plot_layout.addWidget(FigureCanvas(self.fig))
+        self.plot_layout.addWidget(FigureCanvas(self.fig))
+        self.plot_layout.addWidget(FigureCanvas(self.fig))
+
+        self.scrollable.setWidget(w)
+
         self.addWidget(self.table)
-        self.addWidget(self.canvas)
+        # self.addWidget(self.canvas)
+        self.addWidget(self.scrollable)
 
 class QueryExplorer(QSplitter):
     def __init__(self, entity_manager):
