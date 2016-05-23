@@ -48,29 +48,32 @@ class QueryWidget(QSplitter):
         super().__init__(parent)
         self.setOrientation(Qt.Horizontal)
 
-        p = parent
-        self.fig = Figure()
-        self.axes = self.fig.add_subplot(111)
+        self.query = None
 
         self.table = QueryDataTableView()
-        self.canvas = FigureCanvas(self.fig)
-        self.canvas.setParent(p)
 
         self.scrollable = QScrollArea()
-        w = QWidget()
-        self.plot_layout = QVBoxLayout()
-        w.setLayout(self.plot_layout)
+        self.addWidget(self.table)
+        self.addWidget(self.scrollable)
 
-        self.plot_layout.addWidget(self.canvas)
-        self.plot_layout.addWidget(FigureCanvas(self.fig))
-        self.plot_layout.addWidget(FigureCanvas(self.fig))
-        self.plot_layout.addWidget(FigureCanvas(self.fig))
+    def set_query(self, query):
+        self.query = query
 
+        self.table.setModel(self.query.get_model())
+
+        w = self.get_plot_list_widget()
         self.scrollable.setWidget(w)
 
-        self.addWidget(self.table)
-        # self.addWidget(self.canvas)
-        self.addWidget(self.scrollable)
+    def get_plot_list_widget(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        w.setLayout(l)
+
+        plot_list = self.query.get_plots()
+        for plot in plot_list:
+            l.addWidget(plot)
+
+        return w
 
 class QueryExplorer(QSplitter):
     def __init__(self, entity_manager):
@@ -95,40 +98,4 @@ class QueryExplorer(QSplitter):
 
     @pyqtSlot(Query)
     def on_query_changed(self, query):
-        self.current_query = query
-        model = query.get_model()
-        self.query_data.setModel(model)
-
-        self.show_plot()
-
-    def show_plot(self):
-        arrays = []
-        query_data = self.current_query.query_data
-        columns = self.current_query.columns
-
-        axes = self.query_widget.axes
-        canvas = self.query_widget.canvas
-
-        axes.clear()
-
-        num_cols = len(columns)
-
-        # construct list of 4-value arrays
-        for entity_title in query_data:
-            d = []
-
-            for (col_title, function) in columns:
-                d.append(query_data[entity_title][col_title])
-
-            d = np.array(d)
-            d = np.max(d) / d
-
-            axes.plot(range(num_cols), d, 'r')
-
-
-        x_axis = axes.get_xaxis()
-
-        x_axis.set_ticks(range(num_cols))
-        x_axis.set_ticklabels([col_title for (col_title, function) in columns])
-
-        canvas.draw()
+        self.query_widget.set_query(query)

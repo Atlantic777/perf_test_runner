@@ -4,6 +4,11 @@ from PyQt4.QtCore import *
 from result_parsers import *
 from models import *
 
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
 class QueryManager:
     queries = {}
     s = None
@@ -95,6 +100,9 @@ class Query:
         column_titles = [col[0] for col in self.columns]
         return self.DataModelClass(self.query_data, column_titles)
 
+    def get_plots(self):
+        return []
+
 class PerfQuery(Query):
     title = "perf results"
     result_tags = ['perf']
@@ -127,6 +135,33 @@ class PerfQuery(Query):
         ('-O3 IPC', lambda entity: PerfQuery.ipc_for_opt(entity, '-O3')),
     ]
 
+    def get_plots(self):
+        l = []
+
+        fig = Figure()
+        canvas = FigureCanvas(fig)
+        axes = fig.add_subplot(111)
+
+        x_values = range(len(self.columns))
+        x_labels = [col_title for (col_title, function) in self.columns]
+
+        for entity_title in self.query_data:
+            d = []
+
+            for (col_title, function) in self.columns:
+                d.append(self.query_data[entity_title][col_title])
+
+            d = np.array(d)
+
+            axes.plot(x_values, d, 'b')
+
+        x_axis = axes.get_xaxis()
+        x_axis.set_ticks(x_values)
+        x_axis.set_ticklabels(x_labels)
+
+        l.append(canvas)
+
+        return l
 
 
 class ExecSizeQuery(Query):
