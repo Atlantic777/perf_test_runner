@@ -14,6 +14,12 @@ class QueryPlotWidgetBuilder:
 
         self.d[PerfQuery] = [
             PerfIPCOverviewPlot,
+            PerfIPCSingleItemPlot,
+        ]
+
+        self.d[ExecTimeQuery] = [
+            ExecTimeOverviewPlot,
+            ExecTimeSingleItemPlot,
         ]
 
     def get_widget(self, query, table):
@@ -62,13 +68,5 @@ class QueryWidget(QSplitter):
         print("should replot")
 
     def get_plot_list_widget(self):
-        # w = QWidget()
-        # l = QVBoxLayout()
-        # w.setLayout(l)
-
-        # plot_list = self.query.get_plots()
-        # for plot in plot_list:
-        #     l.addWidget(plot)
-
         w = QueryPlotWidgetBuilder().get_widget(self.query, self.table)
         return w
