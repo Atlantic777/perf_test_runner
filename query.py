@@ -102,32 +102,29 @@ class PerfQuery(Query):
     opts = ['-O0', '-O1', '-O2', '-O3']
     DataModelClass = ExecSizeQueryDataModel
 
-    data_for_opt = lambda entity, opt: entity.instances['clang'][opt].results['perf'].parsed_data
+    def __init__(self, entity_manager):
+        instance = lambda entity, opt: entity.instances['clang'][opt]
+        result = lambda instance: instance.results['perf']
 
-    cycles_for_opt = lambda entity, opt: PerfQuery.data_for_opt(entity, opt)['cycles']
-    insns_for_opt = lambda entity, opt: PerfQuery.data_for_opt(entity, opt)['instructions']
+        cycles = lambda result: result.parsed_data['cycles']
+        insns = lambda result: result.parsed_data['instructions']
+        ipc = lambda result: float(cycles(result)) / insns(result)
 
-    ipc_for_opt = lambda entity, opt: \
-                  float(PerfQuery.cycles_for_opt(entity, opt)) / \
-                  PerfQuery.insns_for_opt(entity, opt)
+        f_opt = lambda entity, opt: ipc(result(instance(entity, opt)))
 
-    columns = [
-        # ('-O0 cycles', lambda entity: PerfQuery.cycles_for_opt(entity, '-O0')),
-        # ('-O1 cycles', lambda entity: PerfQuery.cycles_for_opt(entity, '-O1')),
-        # ('-O2 cycles', lambda entity: PerfQuery.cycles_for_opt(entity, '-O2')),
-        # ('-O3 cycles', lambda entity: PerfQuery.cycles_for_opt(entity, '-O3')),
+        f_0 = lambda entity: f_opt(entity, '-O0')
+        f_1 = lambda entity: f_opt(entity, '-O1')
+        f_2 = lambda entity: f_opt(entity, '-O2')
+        f_3 = lambda entity: f_opt(entity, '-O3')
 
-        # ('-O0 instructions', lambda entity: PerfQuery.insns_for_opt(entity, '-O0')),
-        # ('-O1 instructions', lambda entity: PerfQuery.insns_for_opt(entity, '-O1')),
-        # ('-O2 instructions', lambda entity: PerfQuery.insns_for_opt(entity, '-O2')),
-        # ('-O3 instructions', lambda entity: PerfQuery.insns_for_opt(entity, '-O3')),
+        self.columns = [
+            ('-O0 IPC', f_0),
+            ('-O1 IPC', f_1),
+            ('-O2 IPC', f_2),
+            ('-O3 IPC', f_3),
+        ]
 
-        ('-O0 IPC', lambda entity: PerfQuery.ipc_for_opt(entity, '-O0')),
-        ('-O1 IPC', lambda entity: PerfQuery.ipc_for_opt(entity, '-O1')),
-        ('-O2 IPC', lambda entity: PerfQuery.ipc_for_opt(entity, '-O2')),
-        ('-O3 IPC', lambda entity: PerfQuery.ipc_for_opt(entity, '-O3')),
-    ]
-
+        super().__init__(entity_manager)
 
 class ExecSizeQuery(Query):
     title = "size"
@@ -135,14 +132,26 @@ class ExecSizeQuery(Query):
     result_tags = ['executable_size']
     DataModelClass = ExecSizeQueryDataModel
 
-    dec_for_opt = lambda entity, opt: entity.instances['clang'][opt].results['executable_size'].parsed_data['dec']
+    def __init__(self, entity_manager):
+        instance = lambda entity, opt: entity.instances['clang'][opt]
+        result = lambda instance: instance.results['executable_size']
+        dec = lambda result: result.parsed_data['dec']
 
-    columns = [
-        ('-O0 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O0')),
-        ('-O1 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O1')),
-        ('-O2 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O2')),
-        ('-O3 dec', lambda entity: ExecSizeQuery.dec_for_opt(entity, '-O3')),
-    ]
+        f_opt = lambda entity, opt: dec(result(instance(entity, opt)))
+
+        f_0 = lambda entity: f_opt(entity, '-O0')
+        f_1 = lambda entity: f_opt(entity, '-O1')
+        f_2 = lambda entity: f_opt(entity, '-O2')
+        f_3 = lambda entity: f_opt(entity, '-O3')
+
+        self.columns = [
+            ('-O0 dec', f_0),
+            ('-O1 dec', f_1),
+            ('-O2 dec', f_2),
+            ('-O3 dec', f_3),
+        ]
+
+        super().__init__(entity_manager)
 
 
 class ExecTimeQuery(Query):
@@ -151,16 +160,24 @@ class ExecTimeQuery(Query):
     result_tags = ['execution_time']
     DataModelClass = ExecTimeQueryDataModel
 
-    data_for_opt = lambda entity, opt: entity.instances['clang'][opt].results['execution_time'].parsed_data
+    def __init__(self, entity_manager):
+        instance = lambda entity, opt: entity.instances['clang'][opt]
+        result = lambda instance: instance.results['execution_time']
+        elapsed = lambda result: result.parsed_data['user']
 
-    user_time = lambda entity, opt: ExecTimeQuery.data_for_opt(entity, opt)['user']
-    system_time = lambda entity, opt: ExecTimeQuery.data_for_opt(entity, opt)['system']
-    elapsed_time = lambda entity, opt: ExecTimeQuery.data_for_opt(entity, opt)['elapsed']
+        f_opt = lambda entity, opt: elapsed(result(instance(entity, opt)))
 
-    columns = [
-        ('-O0 dec', lambda entity: ExecTimeQuery.user_time(entity, '-O0')),
-        ('-O1 dec', lambda entity: ExecTimeQuery.user_time(entity, '-O1')),
-        ('-O2 dec', lambda entity: ExecTimeQuery.user_time(entity, '-O2')),
-        ('-O3 dec', lambda entity: ExecTimeQuery.user_time(entity, '-O3')),
-    ]
+        f_0 = lambda entity: f_opt(entity, '-O0')
+        f_1 = lambda entity: f_opt(entity, '-O1')
+        f_2 = lambda entity: f_opt(entity, '-O2')
+        f_3 = lambda entity: f_opt(entity, '-O3')
+
+        self.columns = [
+            ('-O0 u_sec', f_0),
+            ('-O1 u_sec', f_1),
+            ('-O2 u_sec', f_2),
+            ('-O3 u_sec', f_3),
+        ]
+
+        super().__init__(entity_manager)
 

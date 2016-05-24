@@ -138,10 +138,10 @@ class ExecTimeOverviewPlot(FigureCanvas):
         self.model = model
 
         self.x_labels = [
-            '-O0 dec',
-            '-O1 dec',
-            '-O2 dec',
-            '-O3 dec',
+            '-O0 u_sec',
+            '-O1 u_sec',
+            '-O2 u_sec',
+            '-O3 u_sec',
         ]
         self.x_values = range(len(self.x_labels))
 
@@ -191,10 +191,10 @@ class ExecTimeSingleItemPlot(FigureCanvas):
         self.model = model
 
         self.x_labels = [
-            '-O0 dec',
-            '-O1 dec',
-            '-O2 dec',
-            '-O3 dec',
+            '-O0 u_sec',
+            '-O1 u_sec',
+            '-O2 u_sec',
+            '-O3 u_sec',
         ]
         self.x_values = range(len(self.x_labels))
 
