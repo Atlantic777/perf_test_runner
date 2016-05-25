@@ -3,7 +3,7 @@ from PyQt4.QtCore import *
 
 from result_parsers import *
 from models import *
-
+from functools import partial as p
 
 class QueryManager:
     queries = {}
@@ -14,7 +14,7 @@ class QueryManager:
         reg(PerfQuery)
         reg(ExecTimeQuery)
         reg(ExecSizeQuery)
-        # reg(PerfTimeSizeQuery)
+        reg(PerfTimeSizeQuery)
         reg(ExecTimeNormQuery)
 
         self.parent = parent
@@ -35,6 +35,9 @@ class QueryManager:
 class Query:
     title = None
     DataModelClass = None
+    values = {}
+    columns = []
+    opts = ['-O0', '-O1', '-O2', '-O3']
 
     def __init__(self, entity_manager):
         if self.title is None or self.DataModelClass is None:
@@ -46,14 +49,35 @@ class Query:
         self.query_data = {}
 
         self.parse()
+        self.build_lambdas()
         self.build_columns()
+
+    def build_lambdas(self):
+        for tag in self.values.keys():
+            for value in self.values[tag]:
+                self.create_category(tag, value)
+
+    def create_category(self, tag, value):
+        results_obj = lambda entity, opt: entity.instances['clang'][opt].results
+        tag_f = lambda entity, tag, r: r(entity)[tag].parsed_data
+        mother_f = lambda entity, value, tag: tag(entity)[value]
+
+        for opt in self.opts:
+            r = p(results_obj, opt=opt)
+            e = p(tag_f, tag=tag, r=r)
+            f = p(mother_f, tag=e, value=value)
+
+            self.columns.append(("{} {}".format(value, opt), f))
 
     def get_model(self):
         raise Exception("too abstract")
 
     def parse(self):
         for entity in self.entities:
-            self.parse_entity(entity)
+            try:
+                self.parse_entity(entity)
+            except Exception as e:
+                print("Can't parse: " + str(entity))
 
     def build_columns(self):
         for entity in self.entities:
@@ -83,7 +107,7 @@ class Query:
             self.results_available_for_instance(i)
 
     def results_available_for_instance(self, instance):
-        tag_not_present = [tag not in instance.results for tag in self.result_tags]
+        tag_not_present = [tag not in instance.results for tag in self.values.keys()]
 
         if any(tag_not_present):
             print(tag_not_present)
@@ -94,7 +118,7 @@ class Query:
 
     def run_parsers(self, instances):
         for i in instances:
-            for tag in self.result_tags:
+            for tag in self.values.keys():
                 i.results[tag].parse()
 
     def get_model(self):
@@ -103,129 +127,37 @@ class Query:
 
 class PerfQuery(Query):
     title = "perf results"
-    result_tags = ['perf']
-    opts = ['-O0', '-O1', '-O2', '-O3']
     DataModelClass = ExecSizeQueryDataModel
-
-    def __init__(self, entity_manager):
-        instance = lambda entity, opt: entity.instances['clang'][opt]
-        result = lambda instance: instance.results['perf']
-
-        cycles = lambda result: result.parsed_data['cycles']
-        insns = lambda result: result.parsed_data['instructions']
-        ipc = lambda result: float(cycles(result)) / insns(result)
-
-        f_opt = lambda entity, opt: ipc(result(instance(entity, opt)))
-
-        f_0 = lambda entity: f_opt(entity, '-O0')
-        f_1 = lambda entity: f_opt(entity, '-O1')
-        f_2 = lambda entity: f_opt(entity, '-O2')
-        f_3 = lambda entity: f_opt(entity, '-O3')
-
-        self.columns = [
-            ('-O0 IPC', f_0),
-            ('-O1 IPC', f_1),
-            ('-O2 IPC', f_2),
-            ('-O3 IPC', f_3),
-        ]
-
-        super().__init__(entity_manager)
+    values = {
+        'perf' : ['cycles', 'instructions'],
+    }
 
 class ExecSizeQuery(Query):
     title = "size"
-    opts = ['-O0', '-O1', '-O2', '-O3']
-    result_tags = ['executable_size']
     DataModelClass = ExecSizeQueryDataModel
-
-    def __init__(self, entity_manager):
-        instance = lambda entity, opt: entity.instances['clang'][opt]
-        result = lambda instance: instance.results['executable_size']
-        dec = lambda result: result.parsed_data['dec']
-
-        f_opt = lambda entity, opt: dec(result(instance(entity, opt)))
-
-        f_0 = lambda entity: f_opt(entity, '-O0')
-        f_1 = lambda entity: f_opt(entity, '-O1')
-        f_2 = lambda entity: f_opt(entity, '-O2')
-        f_3 = lambda entity: f_opt(entity, '-O3')
-
-        self.columns = [
-            ('-O0 dec', f_0),
-            ('-O1 dec', f_1),
-            ('-O2 dec', f_2),
-            ('-O3 dec', f_3),
-        ]
-
-        super().__init__(entity_manager)
-
+    values = {
+        'executable_size': ['dec'],
+    }
 
 class ExecTimeQuery(Query):
     title = "time"
-    opts = ['-O0', '-O1', '-O2', '-O3']
-    result_tags = ['execution_time']
     DataModelClass = ExecTimeQueryDataModel
-
-    def __init__(self, entity_manager):
-        instance = lambda entity, opt: entity.instances['clang'][opt]
-        result = lambda instance: instance.results['execution_time']
-        elapsed = lambda result: result.parsed_data['user']
-
-        f_opt = lambda entity, opt: elapsed(result(instance(entity, opt)))
-
-        f_0 = lambda entity: f_opt(entity, '-O0')
-        f_1 = lambda entity: f_opt(entity, '-O1')
-        f_2 = lambda entity: f_opt(entity, '-O2')
-        f_3 = lambda entity: f_opt(entity, '-O3')
-
-        self.columns = [
-            ('-O0 u_sec', f_0),
-            ('-O1 u_sec', f_1),
-            ('-O2 u_sec', f_2),
-            ('-O3 u_sec', f_3),
-        ]
-
-        super().__init__(entity_manager)
+    values = {
+        'execution_time' : ['user'],
+    }
 
 class PerfTimeSizeQuery(Query):
     title = 'perf time size'
-    opts = ['-O0', '-O1', '-O2', '-O3']
-    result_tags = ['perf', 'execution_time', 'execution_size']
     DataModelClass = PerfTimeSizeDataModel
-
-    def __init__(self, entity_manager):
-        self.columns = []
-        super().__init__(entity_manager)
+    values = {
+        'executable_size' : ['dec'],
+        'perf' : ['instructions', 'branches', 'cycles', 'page-faults'],
+        'execution_time' : ['elapsed'],
+    }
 
 class ExecTimeNormQuery(Query):
     title = "time (norm)"
-    opts = ['-O0', '-O1', '-O2', '-O3']
-    result_tags = ['execution_time']
     DataModelClass = ExecTimeQueryDataModel
-
-    def __init__(self, entity_manager):
-        instance = lambda entity, opt: entity.instances['clang'][opt]
-        result = lambda instance: instance.results['execution_time']
-        elapsed = lambda result: result.parsed_data['user']
-
-        f_opt = lambda entity, opt: elapsed(result(instance(entity, opt)))
-
-        f_0p = lambda entity: f_opt(entity, '-O0')
-        f_1p = lambda entity: f_opt(entity, '-O1')
-        f_2p = lambda entity: f_opt(entity, '-O2')
-        f_3p = lambda entity: f_opt(entity, '-O3')
-
-        norm_coef = lambda e: max([f_0p(e), f_1p(e), f_2p(e), f_3p(e)])
-
-        f_0 = lambda entity: float(f_0p(entity)) / norm_coef(entity)
-        f_1 = lambda entity: float(f_1p(entity)) / norm_coef(entity)
-        f_2 = lambda entity: float(f_2p(entity)) / norm_coef(entity)
-        f_3 = lambda entity: float(f_3p(entity)) / norm_coef(entity)
-
-        self.columns = [
-            ('-O0 u_sec', f_0),
-            ('-O1 u_sec', f_1),
-            ('-O2 u_sec', f_2),
-            ('-O3 u_sec', f_3),
-        ]
-
-        super().__init__(entity_manager)
+    values = {
+        'execution_time' : ['elapsed']
+    }
