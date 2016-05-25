@@ -19,7 +19,17 @@ class QueryPlotWidgetBuilder:
 
         self.d[ExecTimeQuery] = [
             ExecTimeOverviewPlot,
-            ExecTimeSingleItemPlot,
+            ExecTimeSinglePlot,
+        ]
+
+        self.d[ExecSizeQuery] = [
+            ExecSizeOverviewPlot,
+            ExecSizeSinglePlot,
+        ]
+
+        self.d[ExecTimeNormQuery] = [
+            ExecTimeNormOverviewPlot,
+            ExecTimeNormSinglePlot,
         ]
 
     def get_widget(self, query, table):

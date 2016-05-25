@@ -14,6 +14,8 @@ class QueryManager:
         reg(PerfQuery)
         reg(ExecTimeQuery)
         reg(ExecSizeQuery)
+        # reg(PerfTimeSizeQuery)
+        reg(ExecTimeNormQuery)
 
         self.parent = parent
         self.entity_manager = self.parent.entity_manager
@@ -58,7 +60,10 @@ class Query:
             d = {}
 
             for (col_title, col_function) in self.columns:
-                d[col_title] = col_function(entity)
+                try:
+                    d[col_title] = col_function(entity)
+                except:
+                    d[col_title] = 0
 
             self.query_data[entity.source.name] = d
 
@@ -181,3 +186,46 @@ class ExecTimeQuery(Query):
 
         super().__init__(entity_manager)
 
+class PerfTimeSizeQuery(Query):
+    title = 'perf time size'
+    opts = ['-O0', '-O1', '-O2', '-O3']
+    result_tags = ['perf', 'execution_time', 'execution_size']
+    DataModelClass = PerfTimeSizeDataModel
+
+    def __init__(self, entity_manager):
+        self.columns = []
+        super().__init__(entity_manager)
+
+class ExecTimeNormQuery(Query):
+    title = "time (norm)"
+    opts = ['-O0', '-O1', '-O2', '-O3']
+    result_tags = ['execution_time']
+    DataModelClass = ExecTimeQueryDataModel
+
+    def __init__(self, entity_manager):
+        instance = lambda entity, opt: entity.instances['clang'][opt]
+        result = lambda instance: instance.results['execution_time']
+        elapsed = lambda result: result.parsed_data['user']
+
+        f_opt = lambda entity, opt: elapsed(result(instance(entity, opt)))
+
+        f_0p = lambda entity: f_opt(entity, '-O0')
+        f_1p = lambda entity: f_opt(entity, '-O1')
+        f_2p = lambda entity: f_opt(entity, '-O2')
+        f_3p = lambda entity: f_opt(entity, '-O3')
+
+        norm_coef = lambda e: max([f_0p(e), f_1p(e), f_2p(e), f_3p(e)])
+
+        f_0 = lambda entity: float(f_0p(entity)) / norm_coef(entity)
+        f_1 = lambda entity: float(f_1p(entity)) / norm_coef(entity)
+        f_2 = lambda entity: float(f_2p(entity)) / norm_coef(entity)
+        f_3 = lambda entity: float(f_3p(entity)) / norm_coef(entity)
+
+        self.columns = [
+            ('-O0 u_sec', f_0),
+            ('-O1 u_sec', f_1),
+            ('-O2 u_sec', f_2),
+            ('-O3 u_sec', f_3),
+        ]
+
+        super().__init__(entity_manager)

@@ -186,3 +186,6 @@ class ExecSizeQueryDataModel(PerfQueryDataModel):
 
 class ExecTimeQueryDataModel(PerfQueryDataModel):
     pass
+
+class PerfTimeSizeDataModel(PerfQueryDataModel):
+    pass
