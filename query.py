@@ -34,10 +34,14 @@ class QueryManager:
 
 class Query:
     title = None
-    DataModelClass = None
-    values = {}
-    columns = []
     opts = ['-O0', '-O1', '-O2', '-O3']
+    DataModelClass = None
+
+    values = {}
+    meta = {}
+    show = []
+
+    columns = []
 
     def __init__(self, entity_manager):
         if self.title is None or self.DataModelClass is None:
@@ -55,19 +59,72 @@ class Query:
     def build_lambdas(self):
         for tag in self.values.keys():
             for value in self.values[tag]:
-                self.create_category(tag, value)
+                self.create_category(tag, value, norm=True)
 
-    def create_category(self, tag, value):
+        for tag in self.meta.keys():
+            for args in self.meta[tag]:
+                self.create_category(tag, args, norm=True)
+
+    def create_category(self, tag, args, norm=False):
+        value = None
+        params = None
+
+        if type(args) == type( str() ):
+            value = args
+            params = [tag, args]
+        else:
+            value = args[0]
+            params = [tag] + list(args)
+
+        functions = []
+
+        norm_coef_f = lambda entity, functions: max([f(entity) for f in functions])
+        norm_f = lambda entity, f, norm_coef_f: f(entity)/norm_coef_f(entity)
+
+        for opt in self.opts:
+            f = self.create_f(*params, opt=opt)
+            functions.append(f)
+
+            self.columns.append(("{:>20} {:4}".format(value, opt), f))
+
+        if norm:
+            norm_coef_f = p(norm_coef_f, functions=functions)
+            for opt in self.opts:
+                f = self.create_f(*params, opt=opt)
+                f_n = p(norm_f, f=f, norm_coef_f=norm_coef_f)
+
+                self.columns.append(("{:>15} norm {:4}".format(value, opt), f))
+
+    def create_f(self, *args, **kwargs):
+        is_meta = False
+
+        (tag, value, title, value_1, value_2, op) = [None for i in range(6)]
+        opt = kwargs['opt']
+
+        if len(args) == 2:
+            (tag, value) = args
+        elif len(args) == 5:
+            is_meta = True
+            (tag, title, value_1, value_2, op) = args
+
+
         results_obj = lambda entity, opt: entity.instances['clang'][opt].results
         tag_f = lambda entity, tag, r: r(entity)[tag].parsed_data
         mother_f = lambda entity, value, tag: tag(entity)[value]
 
-        for opt in self.opts:
-            r = p(results_obj, opt=opt)
-            e = p(tag_f, tag=tag, r=r)
+        r = p(results_obj, opt=opt)
+        e = p(tag_f, tag=tag, r=r)
+
+        f = None
+        if is_meta:
+            meta_f = lambda entity, value_1, value_2: op(value_1(entity), value_2(entity))
+            f1 = p(mother_f, tag=e, value=value_1)
+            f2 = p(mother_f, tag=e, value=value_2)
+            f = p(meta_f, value_1=f1, value_2=f2) 
+        else:
             f = p(mother_f, tag=e, value=value)
 
-            self.columns.append(("{} {}".format(value, opt), f))
+        return f
 
     def get_model(self):
         raise Exception("too abstract")
@@ -131,6 +188,16 @@ class PerfQuery(Query):
     values = {
         'perf' : ['cycles', 'instructions'],
     }
+
+    meta = {
+        'perf' : [
+            ('ipc', 'instructions', 'cycles', lambda a, b: a / b),
+        ]
+    }
+
+    show = [
+        'ipc norm',
+    ]
 
 class ExecSizeQuery(Query):
     title = "size"

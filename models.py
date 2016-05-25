@@ -133,13 +133,14 @@ class PerfQueryDataModel(QAbstractTableModel):
         row = index.row()
         col = index.column()-1
 
-        entity_values = self.getInstanceAt(row)
-        column_name = self.columns[col]
 
 
         if role == QtCore.Qt.DisplayRole:
             if col == -1:
                 return self.entity_titles[row]
+
+            entity_values = self.getInstanceAt(row)
+            column_name = self.columns[col]
 
             try:
                 if 'IPC' not in column_name:
