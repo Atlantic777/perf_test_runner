@@ -9,38 +9,12 @@ from query import *
 from plots import *
 
 class QueryPlotWidgetBuilder:
-    def __init__(self):
-        self.d = {}
-
-        # self.d[PerfQuery] = [
-        #     PerfIPCOverviewPlot,
-        #     PerfIPCSingleItemPlot,
-        # ]
-
-        # self.d[ExecTimeQuery] = [
-        #     ExecTimeOverviewPlot,
-        #     ExecTimeSinglePlot,
-        # ]
-
-        # self.d[ExecSizeQuery] = [
-        #     ExecSizeOverviewPlot,
-        #     ExecSizeSinglePlot,
-        # ]
-
-        # self.d[ExecTimeNormQuery] = [
-        #     ExecTimeNormOverviewPlot,
-        #     ExecTimeNormSinglePlot,
-        # ]
-
     def get_widget(self, query, table):
-        if type(query) not in self.d:
-            return QWidget()
-
         w = QWidget()
         l = QVBoxLayout()
         w.setLayout(l)
 
-        plot_list = self.d[type(query)]
+        plot_list = [MyOverviewPlot, MySinglePlot]
         for PlotClass in plot_list:
             l.addWidget(PlotClass(table.model(), table))
 

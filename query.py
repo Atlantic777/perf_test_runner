@@ -38,6 +38,7 @@ class Query:
     values = {}
     meta = {}
     show = []
+    plot = ['norm']
 
 
     def __init__(self, entity_manager):
@@ -185,6 +186,15 @@ class Query:
 
         return filtered_cols
 
+    def get_plotable_cols(self):
+        if self.plot == []:
+            return self.columns
+
+        f = lambda c: any([key for key in self.plot if key in c[0]])
+        filtered_cols = [col for col in self.columns if f(col)]
+
+        return filtered_cols
+
 class PerfQuery(Query, QueryDataTableModel):
     title = "perf results"
     values = {
@@ -198,6 +208,10 @@ class PerfQuery(Query, QueryDataTableModel):
     }
 
     show = [
+        'ipc norm',
+    ]
+
+    plot = [
         'ipc norm',
     ]
 
@@ -244,6 +258,8 @@ class PerfTimeSizeQuery(Query, QueryDataTableModel):
         'perf' : ['instructions', 'branches', 'cycles', 'page-faults'],
         'execution_time' : ['elapsed'],
     }
+
+    plot = ['instructions norm']
 
     def __init__(self, entity_manager):
         Query.__init__(self, entity_manager)
