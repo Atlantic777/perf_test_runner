@@ -12,25 +12,25 @@ class QueryPlotWidgetBuilder:
     def __init__(self):
         self.d = {}
 
-        self.d[PerfQuery] = [
-            PerfIPCOverviewPlot,
-            PerfIPCSingleItemPlot,
-        ]
+        # self.d[PerfQuery] = [
+        #     PerfIPCOverviewPlot,
+        #     PerfIPCSingleItemPlot,
+        # ]
 
-        self.d[ExecTimeQuery] = [
-            ExecTimeOverviewPlot,
-            ExecTimeSinglePlot,
-        ]
+        # self.d[ExecTimeQuery] = [
+        #     ExecTimeOverviewPlot,
+        #     ExecTimeSinglePlot,
+        # ]
 
-        self.d[ExecSizeQuery] = [
-            ExecSizeOverviewPlot,
-            ExecSizeSinglePlot,
-        ]
+        # self.d[ExecSizeQuery] = [
+        #     ExecSizeOverviewPlot,
+        #     ExecSizeSinglePlot,
+        # ]
 
-        self.d[ExecTimeNormQuery] = [
-            ExecTimeNormOverviewPlot,
-            ExecTimeNormSinglePlot,
-        ]
+        # self.d[ExecTimeNormQuery] = [
+        #     ExecTimeNormOverviewPlot,
+        #     ExecTimeNormSinglePlot,
+        # ]
 
     def get_widget(self, query, table):
         if type(query) not in self.d:

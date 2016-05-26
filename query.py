@@ -15,7 +15,6 @@ class QueryManager:
         reg(ExecTimeQuery)
         reg(ExecSizeQuery)
         reg(PerfTimeSizeQuery)
-        reg(ExecTimeNormQuery)
 
         self.parent = parent
         self.entity_manager = self.parent.entity_manager
@@ -35,18 +34,17 @@ class QueryManager:
 class Query:
     title = None
     opts = ['-O0', '-O1', '-O2', '-O3']
-    DataModelClass = None
 
     values = {}
     meta = {}
     show = []
 
-    columns = []
 
     def __init__(self, entity_manager):
-        if self.title is None or self.DataModelClass is None:
+        if self.title is None:
             raise Exception("too abstract!")
 
+        self.columns = []
         self.entity_manager = entity_manager
 
         self.entities = self.entity_manager.entityList
@@ -85,7 +83,7 @@ class Query:
             f = self.create_f(*params, opt=opt)
             functions.append(f)
 
-            self.columns.append(("{:>20} {:4}".format(value, opt), f))
+            self.columns.append(("{} {}".format(value, opt), f))
 
         if norm:
             norm_coef_f = p(norm_coef_f, functions=functions)
@@ -93,7 +91,7 @@ class Query:
                 f = self.create_f(*params, opt=opt)
                 f_n = p(norm_f, f=f, norm_coef_f=norm_coef_f)
 
-                self.columns.append(("{:>15} norm {:4}".format(value, opt), f))
+                self.columns.append(("{} norm {}".format(value, opt), f_n))
 
     def create_f(self, *args, **kwargs):
         is_meta = False
@@ -178,13 +176,17 @@ class Query:
             for tag in self.values.keys():
                 i.results[tag].parse()
 
-    def get_model(self):
-        column_titles = [col[0] for col in self.columns]
-        return self.DataModelClass(self.query_data, column_titles)
+    def get_visible_columns(self):
+        if self.show == []:
+            return self.columns
 
-class PerfQuery(Query):
+        f = lambda c: any([key for key in self.show if key in c[0]])
+        filtered_cols = [col for col in self.columns if f(col)]
+
+        return filtered_cols
+
+class PerfQuery(Query, QueryDataTableModel):
     title = "perf results"
-    DataModelClass = ExecSizeQueryDataModel
     values = {
         'perf' : ['cycles', 'instructions'],
     }
@@ -199,32 +201,53 @@ class PerfQuery(Query):
         'ipc norm',
     ]
 
-class ExecSizeQuery(Query):
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class ExecSizeQuery(Query, QueryDataTableModel):
     title = "size"
-    DataModelClass = ExecSizeQueryDataModel
     values = {
         'executable_size': ['dec'],
     }
 
-class ExecTimeQuery(Query):
+    meta = {}
+    show = ['dec']
+
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class ExecTimeQuery(Query, QueryDataTableModel):
     title = "time"
-    DataModelClass = ExecTimeQueryDataModel
     values = {
         'execution_time' : ['user'],
     }
 
-class PerfTimeSizeQuery(Query):
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class PerfTimeSizeQuery(Query, QueryDataTableModel):
     title = 'perf time size'
-    DataModelClass = PerfTimeSizeDataModel
     values = {
         'executable_size' : ['dec'],
         'perf' : ['instructions', 'branches', 'cycles', 'page-faults'],
         'execution_time' : ['elapsed'],
     }
 
-class ExecTimeNormQuery(Query):
-    title = "time (norm)"
-    DataModelClass = ExecTimeQueryDataModel
-    values = {
-        'execution_time' : ['elapsed']
-    }
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self

@@ -113,45 +113,35 @@ class EntityTableModel(QAbstractTableModel):
 
         return self.entity.instances[compiler][opt]
 
-class PerfQueryDataModel(QAbstractTableModel):
-    def __init__(self, parsed_perf_results, column_titles):
+class QueryDataTableModel(QAbstractTableModel):
+    def __init__(self):
         super().__init__()
-        self.values = parsed_perf_results
 
-        self.entity_titles = list(self.values.keys())
-        self.entity_titles.sort()
-
-        self.columns = column_titles
+        self.entity_titles = sorted([entity.source.name for entity in self.entities])
 
     def columnCount(self, index=None):
-        return len(self.columns) + 1
+        cnt =  len(self.get_visible_columns()) + 1
+        return cnt
 
-    def rowCount(self, index=None):
-        return len(self.entity_titles)
+    def rowCount(self, parent=None):
+        count = len(self.entity_manager.entityList)
+        return count
 
     def data(self, index, role):
         row = index.row()
-        col = index.column()-1
-
-
+        col = index.column() - 1
+        columns = self.get_visible_columns()
 
         if role == QtCore.Qt.DisplayRole:
             if col == -1:
                 return self.entity_titles[row]
 
             entity_values = self.getInstanceAt(row)
-            column_name = self.columns[col]
+            column_name = columns[col][0]
 
-            try:
-                if 'IPC' not in column_name:
-                    return "{:>,d}".format(entity_values[column_name])
-                else:
-                    return "{:>.3f}".format(entity_values[column_name])
-            except:
-                return entity_values[column_name]
+            return entity_values[column_name]
         elif role == QtCore.Qt.TextAlignmentRole:
             return QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
-
         else:
             return None
 
@@ -161,32 +151,24 @@ class PerfQueryDataModel(QAbstractTableModel):
                 if section == 0:
                     return "Test name"
                 else:
-                    return self.columns[section-1]
+                    return self.get_visible_columns()[section-1][0]
         else:
             return None
 
     def getInstanceAt(self, row):
         entity_title = self.entity_titles[row]
-        return self.values[entity_title]
+        return self.query_data[entity_title]
 
     def sort(self, column, order):
         reverse_order = False
         column = column - 1
+        column_titles = [col[0] for col in self.get_visible_columns()]
 
         if order == QtCore.Qt.DescendingOrder:
             reverse_order = True
 
-        l = lambda title: self.values[title][self.columns[column]]
+        l = lambda title: self.query_data[title][column_titles[column]]
 
         self.beginResetModel()
         self.entity_titles.sort(key=l, reverse=reverse_order)
         self.endResetModel()
-
-class ExecSizeQueryDataModel(PerfQueryDataModel):
-    pass
-
-class ExecTimeQueryDataModel(PerfQueryDataModel):
-    pass
-
-class PerfTimeSizeDataModel(PerfQueryDataModel):
-    pass

@@ -42,8 +42,8 @@ class Query:
 
     def print_log(self):
         f = lambda c: any([key for key in self.show if key in c[0]])
-
         filtered_cols = filter(f, self.cols)
+        
         for entity in self.entity_list:
             for c in filtered_cols:
                 print( (entity.source.name, c[0], c[1](entity) ) )
@@ -95,9 +95,7 @@ class Query:
                 f = self.create_f(*params, opt=opt)
                 f_n = p(norm_f, f=f, norm_coef_f=norm_coef_f)
 
-                self.cols.append(("{:20} {:>15} norm {:4}".format(tag, value, opt), f_n))
-
-
+                self.cols.append(("{:20} {:>15} norm {:4}".format(tag, value, opt), f))
 
     def create_f(self, *args, **kwargs):
         is_meta = False
