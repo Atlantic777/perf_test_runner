@@ -2,9 +2,12 @@
 Just raw config data
 """
 
-from os.path import join
+from os.path import (
+    join,
+    expanduser,
+)
 
-HOME = "/home/nikola/"
+HOME = expanduser("~")
 LLVM_BUILD_ROOT = join(HOME, "diplomski/build/llvm")
 
 SINGLE_SOURCE_TESTS_ROOT = join(LLVM_BUILD_ROOT, "projects/test-suite/SingleSource/Benchmarks/")
