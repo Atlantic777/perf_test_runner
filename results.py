@@ -155,3 +155,7 @@ class TimeCrossResult(Result):
     tag = "cross_time"
     has_analysis = True
 
+
+class PerfEstResult(Result):
+    tag = "perf_est_fron"
+    has_analysis = True

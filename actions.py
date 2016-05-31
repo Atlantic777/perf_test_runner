@@ -228,3 +228,7 @@ class TimeAction(MetaAction):
         self.dependencies = [
             self.has_executable,
         ]
+
+class PerfEstAction(MetaAction):
+    title = "Performance estimation"
+    JobClass = PerfEstJob
