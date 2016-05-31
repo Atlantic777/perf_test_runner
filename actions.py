@@ -18,6 +18,12 @@ class MetaAction(QAction):
 
     Just define on_triggered function
     You can expect root window to be available in self.parent
+
+    This is actually an action executor. It will fetch scope,
+    filter out instances and then run the self.run() function
+    on each instance.
+
+    After that it will refresh all widgets.
     """
 
     def __init__(self, parent=None):
@@ -26,11 +32,11 @@ class MetaAction(QAction):
         self.set_dependencies()
 
     def on_triggered(self, event):
+        self.scopes = self.parent().getActionScopes()
+        self.instance_list = self.getInstances(scopes)
         self.triggerIt()
 
     def triggerIt(self):
-        scopes = self.parent().getActionScopes()
-        instance_list = self.getInstances(scopes)
 
         for instance in instance_list:
             if self.check_dependencies(instance) is True:

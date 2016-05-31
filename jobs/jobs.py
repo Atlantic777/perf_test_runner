@@ -23,6 +23,8 @@ from settings import (
     OUTPUT_ROOT,
     SINGLE_SOURCE_TESTS_ROOT,
     OPT_PATH,
+    CROSS_GCC_PATH,
+    CROSS_SYSROOT,
 )
 
 import subprocess
@@ -33,12 +35,19 @@ from results import *
 class JobBase:
     tag = None
     output_extension = None
+    ResultClass = None
 
-    def __init__(self, instance):
+    def __init__(self, instance, includes=[]):
+        if self.ResultClass is None:
+            raise Exception("The JobClass is too abstract!")
+
         self.instance = instance
+        self.includes = includes
 
-    def run(self):
-        if self.result.tag in self.instance.results:
+        self.result = self.ResultClass(instance)
+
+    def run(self, force=False, verbose=True):
+        if force is False and self.ResultClass.tag in self.instance.results:
             return
         else:
             pass
@@ -51,6 +60,11 @@ class JobBase:
             (out, err) = proc.communicate()
             (out, err) = ( self._b2s(out), self._b2s(err) )
 
+            if verbose:
+                print(out)
+                print(err)
+
+            print("pre save results")
             self.collect_results(out, err)
         except Exception as e:
             print(e)
@@ -64,21 +78,17 @@ class JobBase:
     def _b2s(self, b):
         return ''.join([chr(i) for i in b])
 
-    def get_output_path(self):
-        if self.output_extension is None:
-            raise Exception("output extension is not set!")
+    # def get_output_path(self):
+    #     if self.output_extension is None:
+    #         raise Exception("output extension is not set!")
 
-        d = self.instance.getOutputPath()
-        f = self.instance.parent.source.name.replace('.c', self.output_extension)
+    #     d = self.instance.getOutputPath()
+    #     f = self.instance.parent.source.name.replace('.c', self.output_extension)
 
         return path.join(d, f)
 
 class CompilerJob(JobBase):
-    def __init__(self, instance, includes=None):
-        super().__init__(instance)
-
-        self.includes = includes
-        self.result = CompilationResult(self.instance)
+    ResultClass = CompilationResult
 
     def collect_results(self, out=None, err=None):
         out = self.result.action_output_file.full_path
@@ -98,12 +108,49 @@ class CompilerJob(JobBase):
 
         return args
 
-class GenerateBitcodeJob(JobBase):
-    def __init__(self, instance, includes):
-        super().__init__(instance)
-        self.includes = includes
+class CrossAsmJob(JobBase):
+    ResultClass = CrossAsmResult
 
-        self.result = GenerateBitcodeResult(self.instance)
+    def collect_results(self, out=None, err=None):
+        print("saving results")
+        self.result.save()
+
+    def get_args_list(self):
+        args = []
+        args.append(self.instance.compiler.path)
+        args.append("--sysroot")
+        args.append(CROSS_SYSROOT)
+        args.append("-S")
+        args.append("--target=mips")
+        args += ['-I' + include_folder for include_folder in self.includes]
+        args.append(self.instance.opt)
+        args.append(self.instance.parent.source.path)
+        args.append("-o" + self.result.action_output_file.full_path)
+
+        return args
+
+class CrossCompileJob(JobBase):
+    ResultClass = CrossCompileResult
+
+    def collect_results(self, out=None, err=None):
+        out = self.result.action_output_file.full_path
+        self.result.save()
+
+    def get_args_list(self):
+        args = []
+        args.append(CROSS_GCC_PATH)
+        args.append("-lm")
+        args.append("-EL")
+        args += ['-I' + include_folder for include_folder in self.includes]
+        args.append(self.instance.opt)
+        args.append(self.instance.results[CrossAsmResult.tag].action_output_file.full_path)
+        args.append("-o" + self.result.action_output_file.full_path)
+
+        return args
+
+
+class GenerateBitcodeJob(JobBase):
+    ResultClass = GenerateBitcodeResult
 
     def get_args_list(self):
         args = [
@@ -122,9 +169,7 @@ class GenerateBitcodeJob(JobBase):
         self.result.save()
 
 class GenerateOptimiserStatsJob(JobBase):
-    def __init__(self, instance):
-        super().__init__(instance)
-        self.result = OptimiserStatsResult(self.instance)
+    ResultClass = OptimiserStatsResult
 
     def collect_results(self, out, err):
         self.result.raw_output = err
@@ -143,9 +188,7 @@ class GenerateOptimiserStatsJob(JobBase):
         return args
 
 class PerfJob(JobBase):
-    def __init__(self, instance):
-        super().__init__(instance)
-        self.result = PerfResult(instance)
+    ResultClass = PerfResult
 
     def collect_results(self, out, err):
         self.result.raw_output = err
@@ -161,9 +204,7 @@ class PerfJob(JobBase):
         return args
 
 class ExecutableSizeJob(JobBase):
-    def __init__(self, instance):
-        super().__init__(instance)
-        self.result = ExecutableSizeResult(instance)
+    ResultClass = ExecutableSizeResult
 
     def collect_results(self, out, err):
         self.result.raw_output = out
@@ -178,9 +219,7 @@ class ExecutableSizeJob(JobBase):
         return args
 
 class TimeExecutionJob(JobBase):
-    def __init__(self, instance):
-        super().__init__(instance)
-        self.result = TimeExecutionResult(instance)
+    ResultClass = TimeExecutionResult
 
     def collect_results(self, out, err):
         self.result.raw_output = '\n'.join(err.split('\n')[-3:])
@@ -191,5 +230,22 @@ class TimeExecutionJob(JobBase):
             'time',
             self.instance.results[CompilationResult.tag].action_output_file.full_path,
         ]
+
+        return args
+
+class TimeCrossJob(JobBase):
+    ResultClass = TimeCrossResult
+
+    def collect_results(self, out, err):
+        self.result.raw_output = '\n'.join(err.split('\n')[-3:])
+        self.result.save()
+
+    def get_args_list(self):
+        args = [
+            'time',
+            self.instance.results[CrossCompileResult.tag].action_output_file.full_path,
+        ]
+
+        print(args)
 
         return args

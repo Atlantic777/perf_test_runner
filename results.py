@@ -113,6 +113,18 @@ class CompilationResult(Result):
         if good is True:
             self.instance._hash = hash_of_file(self.action_output_file.full_path)
 
+class CrossCompileResult(Result):
+    extension = ".xout"
+    tag = "cross_comp"
+    has_output = True
+
+    def load(self):
+        good = super().load()
+
+        if good is True:
+            # self.instance._hash = hash_of_file(self.action_output_file.full_path)
+            print("result is good")
+
 class GenerateBitcodeResult(Result):
     extension = ".ll"
     tag = "bitcode"
@@ -121,9 +133,6 @@ class GenerateBitcodeResult(Result):
 class OptimiserStatsResult(Result):
     tag = "optimiser_stats"
     has_analysis = True
-
-    # for row in self.raw_results:
-    #     print(row)
 
 class PerfResult(Result):
     tag = "perf"
@@ -139,3 +148,14 @@ class TimeExecutionResult(Result):
     tag = "execution_time"
     has_analysis = True
     ParserClass = TimeExecutionParser
+
+class CrossAsmResult(Result):
+    tag = "cross_asm"
+    has_analysis = False
+    has_output = True
+    extension = "-x.s"
+
+class TimeCrossResult(Result):
+    tag = "cross_time"
+    has_analysis = True
+

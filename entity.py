@@ -4,6 +4,7 @@ Test source files, their instances and their manager:
 from os import path
 from settings import OUTPUT_ROOT
 from results import *
+from jobs import *
 
 class Entity:
     """
@@ -72,10 +73,19 @@ class EntityManager:
     entityList = []
     buildOptions = None
 
-    def __init__(self, buildOptions):
-        self.buildOptions = buildOptions
+    def __init__(self, buildOptions=None, preload=True):
+        if buildOptions:
+            self.buildOptions = buildOptions
+        else:
+            self.buildOptions = CompilerOptions()
 
-    def createEntityList(self, sourceList):
+        self.explorer = FileExplorer(SINGLE_SOURCE_TESTS_ROOT)
+        (self.source_list, self.include_dirs) = self.explorer.find()
+
+        self.createEntityList(self.source_list, preload)
+
+
+    def createEntityList(self, sourceList, preload=True):
         """
         Given the list of test sources create list of entities
         """
@@ -84,7 +94,8 @@ class EntityManager:
         for source in sourceList:
             self.entityList.append(Entity(source, self.buildOptions))
 
-        self.discover_result_files()
+        if preload:
+            self.discover_result_files()
 
     def discover_result_files(self):
         for instance in self.all_instances():
@@ -96,6 +107,10 @@ class EntityManager:
                 for instance in opt.values():
                     yield instance
 
+    def all_entities(self):
+        for entity in self.entityList:
+            yield entity
+
     def _load_existing_results(self, instance):
         results = [
             CompilationResult,
@@ -104,9 +119,67 @@ class EntityManager:
             PerfResult,
             ExecutableSizeResult,
             TimeExecutionResult,
+            CrossAsmResult,
+            CrossCompileResult,
         ]
 
         for Res in results:
             r = Res(instance)
             r.load()
+
+    def get_entity(self, entity_name):
+        for entity in self.entityList:
+            if entity_name in entity.source.name:
+                return entity
+
+    # def getInstances(self, scopes):
+    #     entities = self._getEntities(scopes)
+    #     instances = self._filterInstances(entities, scopes)
+
+    #     return instances
+
+    # def _getEntities(self, scopes):
+    #     s = scopes['entity']
+
+    #     parent = self.parent()
+    #     entity_manager = parent.entity_manager
+
+    #     entities = None
+
+    #     if s == 0:
+    #         entities = entity_manager.all_instances()
+    #     elif (s == 1 or s == 2) and parent.selected_entity is not None:
+    #         entities = parent.selected_entity.all_instances()
+    #     else:
+    #         entities = []
+
+    #     return entities
+
+    # def _filterInstances(self, instances, scopes):
+    #     final_instances_list = []
+
+    #     parent = self.parent()
+    #     selected_entity = parent.selected_entity
+    #     selected_instance = parent.selected_instance
+
+    #     if scopes['entity'] == 2 and selected_instance is not None:
+    #         return  [ selected_instance ]
+
+    #     for instance in instances:
+    #         if self._checkSingleInstance(instance, scopes):
+    #             final_instances_list.append(instance)
+
+    #     return final_instances_list
+
+    # def _checkSingleInstance(self, instance, scopes):
+    #     selected_compilers = scopes['compiler']
+    #     selected_optims = scopes['optimisation']
+
+    #     compiler_ok = instance.compiler.name in selected_compilers
+    #     optim_ok = instance.opt in selected_optims
+
+    #     if compiler_ok and optim_ok:
+    #         return True
+    #     else:
+    #         return False
 
