@@ -33,12 +33,11 @@ class MetaAction(QAction):
 
     def on_triggered(self, event):
         self.scopes = self.parent().getActionScopes()
-        self.instance_list = self.getInstances(scopes)
+        self.instance_list = self.getInstances(self.scopes)
         self.triggerIt()
 
     def triggerIt(self):
-
-        for instance in instance_list:
+        for instance in self.instance_list:
             if self.check_dependencies(instance) is True:
                 self.run(instance)
             else:
@@ -111,6 +110,7 @@ class MetaAction(QAction):
 
     def run(self, instance):
         if self.JobClass is not None:
+            print("trying to run job")
             self.job = self.JobClass(instance)
             self.job.run()
 

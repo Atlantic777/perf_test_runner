@@ -34,14 +34,20 @@ class GUIApplication(Application, QObject):
         self.w.setWindowTitle("# Hello world!")
 
         # other init routines
-        self.setup_entity_manager()
+        self.entity_manager = EntityManager()
         self.build_layout()
+        self.prepare_result_dirs()
 
         self.w.show()
 
-    def setup_entity_manager(self):
-        self.build_options = CompilerOptions()
-        self.entity_manager = EntityManager(self.build_options)
+    def prepare_result_dirs(self):
+        options = CompilerOptions()
+
+        try:
+            for d in options.get_output_dirs():
+                makedirs(path.join(OUTPUT_ROOT, d))
+        except:
+            pass
 
     def run(self):
         self.qApp.exec_()
