@@ -228,7 +228,7 @@ class ActionsPane(QWidget):
 
     def automate(self, event):
         for action in self.getCheckedActions():
-            action.triggerIt()
+            action.on_triggered()
 
 class EntityManagerView(QListView):
     entitySelectionChanged = pyqtSignal(Entity)
