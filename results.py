@@ -159,3 +159,4 @@ class TimeCrossResult(Result):
 class PerfEstResult(Result):
     tag = "perf_est_fron"
     has_analysis = True
+    ParserClass = PerfEstParser

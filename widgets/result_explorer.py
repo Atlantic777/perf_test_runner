@@ -34,8 +34,6 @@ class ResultExplorer(QSplitter):
         self.setSizes([250, 800, 250])
         self.entity_widget.setSizes([100, 600])
 
-        self.actions['find_sources'].on_triggered()
-
         self.selected_entity = None
         self.selected_instance = None
 

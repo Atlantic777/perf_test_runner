@@ -15,6 +15,7 @@ class QueryManager:
         reg(ExecTimeQuery)
         reg(ExecSizeQuery)
         reg(PerfTimeSizeQuery)
+        reg(PerfEstQuery)
 
         self.parent = parent
         self.entity_manager = self.parent.entity_manager
@@ -134,6 +135,7 @@ class Query:
                 self.parse_entity(entity)
             except Exception as e:
                 print("Can't parse: " + str(entity))
+                print(e)
 
     def build_columns(self):
         for entity in self.entities:
@@ -260,6 +262,21 @@ class PerfTimeSizeQuery(Query, QueryDataTableModel):
     }
 
     plot = ['instructions norm']
+
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class PerfEstQuery(Query, QueryDataTableModel):
+    title = 'perf est query'
+    values = {
+        'perf_est_fron': ['estimation']
+    }
+
+    pot = ['estimation norm']
 
     def __init__(self, entity_manager):
         Query.__init__(self, entity_manager)

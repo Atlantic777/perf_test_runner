@@ -129,15 +129,12 @@ class Query:
         return f
 
 def scratch():
-    options = CompilerOptions()
-    manager = EntityManager(options)
+    manager = EntityManager()
 
-    explorer = FileExplorer(SINGLE_SOURCE_TESTS_ROOT)
-    (source_list, include_dirs)  = explorer.find()
+    for entity in manager.entityList:
+        print(entity)
 
-    manager.createEntityList(source_list)
-
-    q = Query(manager)
+    # q = Query(manager)
 
 if __name__ == "__main__":
     if '-s' in sys.argv:

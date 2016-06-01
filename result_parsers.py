@@ -155,3 +155,34 @@ class ExecutableSizeParser:
             print(column_names)
             print(column_values)
 
+class PerfEstParser:
+    columns = [
+        'estimation',
+    ]
+
+    def __init__(self, raw_results=None):
+        if raw_results is None:
+            return False
+
+        self.values = {}
+
+        self.raw_results = raw_results
+        self.raw_resutls_ref = raw_results
+
+        self.parse()
+
+    def parse(self):
+        self.strip_header()
+        self.extract_data()
+
+    def strip_header(self):
+        pass
+
+    def extract_data(self):
+        lines = self.raw_results.split('\n')
+
+        for l in lines:
+            if "Total sum" in l:
+                s = l.split(':')
+                val = float( s[1] )
+                self.values[self.columns[0]] = val
