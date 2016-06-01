@@ -121,10 +121,6 @@ class CrossCompileResult(Result):
     def load(self):
         good = super().load()
 
-        if good is True:
-            # self.instance._hash = hash_of_file(self.action_output_file.full_path)
-            print("result is good")
-
 class GenerateBitcodeResult(Result):
     extension = ".ll"
     tag = "bitcode"

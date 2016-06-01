@@ -67,6 +67,7 @@ class JobBase:
             print("pre save results")
             self.collect_results(out, err)
         except Exception as e:
+            print("exception happened")
             print(e)
 
     def get_args_list(self):
