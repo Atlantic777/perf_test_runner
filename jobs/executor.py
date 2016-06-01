@@ -38,7 +38,7 @@ class Executor:
 
     def run(self, instance):
         if self.verbose:
-            print("Executing action on: " + str(instance))
+            print("Executing action: " + self.JobClass.ResultClass.tag + " on: " + str(instance))
 
         includes = self.entity_manager.include_dirs
         self.job = self.JobClass(instance, includes)

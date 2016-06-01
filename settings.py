@@ -10,7 +10,8 @@ from os.path import (
 HOME = expanduser("~")
 LLVM_BUILD_ROOT = join(HOME, "diplomski/build/llvm")
 
-SINGLE_SOURCE_TESTS_ROOT = join(LLVM_BUILD_ROOT, "projects/test-suite/SingleSource/Benchmarks/")
+# SINGLE_SOURCE_TESTS_ROOT = join(LLVM_BUILD_ROOT, "projects/test-suite/SingleSource/Benchmarks/")
+SINGLE_SOURCE_TESTS_ROOT = join(HOME, "diplomski/test_sources/")
 
 OUTPUT_ROOT = join(HOME, "diplomski/test_runs/")
 TOOLCHAIN_ROOT = join(HOME, "diplomski/toolchains/mips-2013.11")
@@ -28,6 +29,7 @@ HEADER_EXTENSION = ".h"
 EXCLUDE_LIST = [
     "polybench.c",
     "exptree.c",
+    "flops.c",
     # "linpack-pc.c",
     "flops.c",
     "perlin.c",
