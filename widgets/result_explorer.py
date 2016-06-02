@@ -85,6 +85,7 @@ class ResultExplorer(QSplitter):
         self._register_single_action('size', SizeAction)
         self._register_single_action('time', TimeAction)
         self._register_single_action('perf est', PerfEstAction)
+        self._register_single_action('perf est (codegen)', PerfEstBackAction)
 
     def _register_single_action(self, name, action_class):
         self.actions[name] = action_class(self)

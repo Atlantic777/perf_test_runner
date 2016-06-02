@@ -232,3 +232,7 @@ class TimeAction(MetaAction):
 class PerfEstAction(MetaAction):
     title = "Performance estimation"
     JobClass = PerfEstJob
+
+class PerfEstBackAction(MetaAction):
+    title = "perforamnce est (codegen)"
+    JobClass = PerfEstBackJob
