@@ -30,6 +30,7 @@ EXCLUDE_LIST = [
     "polybench.c",
     "exptree.c",
     "flops.c",
+    "perlin.c",
     # "linpack-pc.c",
 ]
 
