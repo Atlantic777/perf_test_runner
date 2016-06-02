@@ -16,6 +16,7 @@ class QueryManager:
         reg(ExecSizeQuery)
         reg(PerfTimeSizeQuery)
         reg(PerfEstQuery)
+        reg(TimeCrossQuery)
 
         self.parent = parent
         self.entity_manager = self.parent.entity_manager
@@ -162,7 +163,11 @@ class Query:
 
     def check_instance_results_presence(self, instances):
         for i in instances:
-            self.results_available_for_instance(i)
+            try:
+                self.results_available_for_instance(i)
+            except Exception as e:
+                print(e)
+
 
     def results_available_for_instance(self, instance):
         tag_not_present = [tag not in instance.results for tag in self.values.keys()]
@@ -276,7 +281,22 @@ class PerfEstQuery(Query, QueryDataTableModel):
         'perf_est_fron': ['estimation']
     }
 
-    pot = ['estimation norm']
+    plot = ['estimation norm']
+
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class TimeCrossQuery(Query, QueryDataTableModel):
+    title = 'time cross'
+    values = {
+        'cross_time': ['user']
+    }
+
+    plot = ['user norm']
 
     def __init__(self, entity_manager):
         Query.__init__(self, entity_manager)

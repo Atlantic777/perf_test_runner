@@ -29,6 +29,8 @@ EXCLUDE_LIST = [
     "polybench.c",
     "exptree.c",
     # "linpack-pc.c",
+    "flops.c",
+    "perlin.c",
 ]
 
 class Scope:

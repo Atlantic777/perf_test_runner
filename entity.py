@@ -122,6 +122,7 @@ class EntityManager:
             CrossAsmResult,
             CrossCompileResult,
             PerfEstResult,
+            TimeCrossResult,
         ]
 
         for Res in results:

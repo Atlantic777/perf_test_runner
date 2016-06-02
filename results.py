@@ -154,6 +154,7 @@ class CrossAsmResult(Result):
 class TimeCrossResult(Result):
     tag = "cross_time"
     has_analysis = True
+    ParserClass = TimeExecutionParser
 
 
 class PerfEstResult(Result):
