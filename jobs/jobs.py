@@ -158,6 +158,7 @@ class GenerateBitcodeJob(JobBase):
             self.instance.compiler.path,
             "-emit-llvm",
             "-S",
+            "--target=mips",
             self.instance.opt,
             self.instance.parent.source.path,
             "-o" + self.result.action_output_file.full_path,
