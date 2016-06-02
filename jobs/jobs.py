@@ -280,9 +280,11 @@ class PerfEstBackJob(JobBase):
             "--target=mips",
             "-S",
             self.instance.opt,
+        ]
+        args += ['-I' + include_folder for include_folder in self.includes]
+        args += [
             self.instance.parent.source.path,
             "-o/dev/null"
         ]
-        args += ['-I' + include_folder for include_folder in self.includes]
 
         return args

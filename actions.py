@@ -236,3 +236,8 @@ class PerfEstAction(MetaAction):
 class PerfEstBackAction(MetaAction):
     title = "perforamnce est (codegen)"
     JobClass = PerfEstBackJob
+
+    def run(self, instance):
+        includes = self.parent().includes
+        job = PerfEstBackJob(instance, includes)
+        job.run()

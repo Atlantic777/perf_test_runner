@@ -218,5 +218,5 @@ class PerfEstBackParser:
                 val = l.split(':')[1]
                 val = float(val)
 
-                self.values[columns[0]] = val
+                self.values[self.columns[0]] = val
                 return

@@ -130,7 +130,7 @@ class Query:
         return f
 
     def get_model(self):
-        self
+        raise Exception("Too abstract!")
 
     def parse(self):
         for entity in self.entities:
@@ -331,7 +331,7 @@ class TimeCrossVsPefEstQuery(Query, QueryDataTableModel):
 class PerfEstBackQuery(Query, QueryDataTableModel):
     title = 'perf back est'
     values = {
-        'perf_est_back' : 'total',
+        'perf_est_back' : [ 'total' ],
     }
 
     plot = [
