@@ -34,12 +34,12 @@ class ResultExplorer(QSplitter):
         self.setSizes([250, 800, 250])
         self.entity_widget.setSizes([100, 600])
 
-        self.actions['find_sources'].on_triggered()
-
         self.selected_entity = None
         self.selected_instance = None
 
         self.instance_type = None
+
+        self.includes = self.entity_manager.include_dirs
 
 
     def build_layout(self):
@@ -84,6 +84,7 @@ class ResultExplorer(QSplitter):
         self._register_single_action('perf', PerfAction)
         self._register_single_action('size', SizeAction)
         self._register_single_action('time', TimeAction)
+        self._register_single_action('perf est', PerfEstAction)
 
     def _register_single_action(self, name, action_class):
         self.actions[name] = action_class(self)

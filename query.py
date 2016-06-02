@@ -15,6 +15,9 @@ class QueryManager:
         reg(ExecTimeQuery)
         reg(ExecSizeQuery)
         reg(PerfTimeSizeQuery)
+        reg(PerfEstQuery)
+        reg(TimeCrossQuery)
+        reg(TimeCrossVsPefEstQuery)
 
         self.parent = parent
         self.entity_manager = self.parent.entity_manager
@@ -126,7 +129,7 @@ class Query:
         return f
 
     def get_model(self):
-        raise Exception("too abstract")
+        self
 
     def parse(self):
         for entity in self.entities:
@@ -134,6 +137,7 @@ class Query:
                 self.parse_entity(entity)
             except Exception as e:
                 print("Can't parse: " + str(entity))
+                print(e)
 
     def build_columns(self):
         for entity in self.entities:
@@ -160,7 +164,11 @@ class Query:
 
     def check_instance_results_presence(self, instances):
         for i in instances:
-            self.results_available_for_instance(i)
+            try:
+                self.results_available_for_instance(i)
+            except Exception as e:
+                print(e)
+
 
     def results_available_for_instance(self, instance):
         tag_not_present = [tag not in instance.results for tag in self.values.keys()]
@@ -190,8 +198,10 @@ class Query:
         if self.plot == []:
             return self.columns
 
-        f = lambda c: any([key for key in self.plot if key in c[0]])
-        filtered_cols = [col for col in self.columns if f(col)]
+        filtered_cols = []
+        for col_name in self.plot:
+            print(col_name)
+            filtered_cols.append([col for col in self.columns if col_name in col[0]])
 
         return filtered_cols
 
@@ -260,6 +270,55 @@ class PerfTimeSizeQuery(Query, QueryDataTableModel):
     }
 
     plot = ['instructions norm']
+
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class PerfEstQuery(Query, QueryDataTableModel):
+    title = 'perf est query'
+    values = {
+        'perf_est_fron': ['estimation']
+    }
+
+    plot = ['estimation norm']
+
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class TimeCrossQuery(Query, QueryDataTableModel):
+    title = 'time cross'
+    values = {
+        'cross_time': ['user']
+    }
+
+    plot = ['user norm']
+
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class TimeCrossVsPefEstQuery(Query, QueryDataTableModel):
+    title = "perf_est vs cross_time"
+    values = {
+        'cross_time': ['user'],
+        'perf_est_fron': ['estimation'],
+    }
+
+    plot = [
+        'user norm',
+        'estimation norm',
+    ]
 
     def __init__(self, entity_manager):
         Query.__init__(self, entity_manager)

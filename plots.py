@@ -11,7 +11,7 @@ class MyPlot(FigureCanvas):
         self.selection = None
 
         self.create_labels()
-        self.x_values = range(len(self.x_labels))
+        self.x_values = range(len(self.x_labels[0]))
 
         self.fig = Figure()
         super().__init__(self.fig)
@@ -41,22 +41,36 @@ class MyPlot(FigureCanvas):
 
     def create_labels(self):
         cols = self.model.get_plotable_cols()
-        self.x_labels = [col[0] for col in cols]
+        # self.x_labels = [col[0] for col in cols]
+        self.x_labels = []
+        for row in cols:
+            self.x_labels.append([c[0] for c in row])
+
+    def draw_data(self):
+        raise Exception("Plot class is too abstract!")
 
 class MyOverviewPlot(MyPlot):
     def draw_data(self):
         self.axes.clear()
 
+        colors = ['b', 'r', 'g']
+        i = 0
+
+        group_num = len(self.x_labels)
+        print([z for z in zip(colors[:group_num], [title[0] for title in self.x_labels])])
+
         for row in range(self.model.rowCount()):
-            d = []
             values = self.model.getInstanceAt(row)
 
-            for col in self.x_labels:
-                d.append(values[col])
+            i = 0
+            for labels_row in self.x_labels:
+                d = []
+                for col in labels_row:
+                    d.append(values[col])
 
-            d = np.array(d)
-
-            self.axes.plot(self.x_values, d, 'b')
+                d = np.array(d)
+                self.axes.plot(self.x_values, d, colors[i])
+                i += 1
 
         self.axes.set_ylim(0, 1)
         self.draw()
@@ -68,16 +82,23 @@ class MySinglePlot(MyPlot):
         if self.selection is None:
             return
 
+        colors = ['b', 'r', 'g']
+        i = 0
+
+        group_num = len(self.x_labels)
+        print([z for z in zip(colors[:group_num], [title[0] for title in self.x_labels])])
+
         values = self.selection
 
-        d = []
+        for labels_row in self.x_labels:
+            d = []
+            for col in labels_row:
+                d.append(values[col])
 
-        for col in self.x_labels:
-            d.append(values[col])
+            d = np.array(d)
+            self.axes.plot(self.x_values, d, colors[i])
+            i += 1
 
-        d = np.array(d)
-
-        self.axes.plot(self.x_values, d, 'b')
         x_axis = self.axes.get_xaxis()
         x_axis.set_ticks(self.x_values)
         x_axis.set_ticklabels(self.x_labels)

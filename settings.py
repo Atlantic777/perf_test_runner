@@ -32,6 +32,8 @@ EXCLUDE_LIST = [
     "flops.c",
     "perlin.c",
     # "linpack-pc.c",
+    "flops.c",
+    "perlin.c",
 ]
 
 class Scope:

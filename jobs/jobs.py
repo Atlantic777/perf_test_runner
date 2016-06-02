@@ -158,7 +158,7 @@ class GenerateBitcodeJob(JobBase):
             self.instance.compiler.path,
             "-emit-llvm",
             "-S",
-            "-O0",
+            self.instance.opt,
             self.instance.parent.source.path,
             "-o" + self.result.action_output_file.full_path,
         ]
@@ -247,6 +247,22 @@ class TimeCrossJob(JobBase):
             self.instance.results[CrossCompileResult.tag].action_output_file.full_path,
         ]
 
-        print(args)
+        return args
+
+class PerfEstJob(JobBase):
+    ResultClass = PerfEstResult
+
+    def collect_results(self, out, err):
+        self.result.raw_output = err
+        self.result.save()
+
+    def get_args_list(self):
+        args = [
+            OPT_PATH,
+            "-analyze",
+            "-perf-est",
+            self.instance.results[GenerateBitcodeResult.tag].action_output_file.full_path
+        ]
 
         return args
+

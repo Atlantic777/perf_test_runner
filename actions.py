@@ -31,14 +31,14 @@ class MetaAction(QAction):
         self.setParent(parent)
         self.set_dependencies()
 
-    def on_triggered(self, event):
+    def on_triggered(self, event=None):
         self.scopes = self.parent().getActionScopes()
-        self.instance_list = self.getInstances(scopes)
+        self.instance_list = self.getInstances(self.scopes)
+
         self.triggerIt()
 
     def triggerIt(self):
-
-        for instance in instance_list:
+        for instance in self.instance_list:
             if self.check_dependencies(instance) is True:
                 self.run(instance)
             else:
@@ -111,6 +111,7 @@ class MetaAction(QAction):
 
     def run(self, instance):
         if self.JobClass is not None:
+            print(instance)
             self.job = self.JobClass(instance)
             self.job.run()
 
@@ -227,3 +228,7 @@ class TimeAction(MetaAction):
         self.dependencies = [
             self.has_executable,
         ]
+
+class PerfEstAction(MetaAction):
+    title = "Performance estimation"
+    JobClass = PerfEstJob
