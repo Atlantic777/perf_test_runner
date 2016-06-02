@@ -266,3 +266,21 @@ class PerfEstJob(JobBase):
 
         return args
 
+class PerfEstBackJob(JobBase):
+    ResultClass = PerfEstBackResult
+
+    def collect_results(self, out, err):
+        self.result.raw_output = err
+        self.result.save()
+
+    def get_args_list(self):
+        args = [
+            CLANG_PATH,
+            "--target=mips",
+            "-S",
+            self.instance.opt,
+            self.instance.parent.source.path,
+            "-o/dev/null"
+        ]
+
+        return args

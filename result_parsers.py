@@ -186,3 +186,37 @@ class PerfEstParser:
                 s = l.split(':')
                 val = float( s[1] )
                 self.values[self.columns[0]] = val
+
+class PerfEstBackParser:
+    columns = [
+        'total',
+    ]
+
+    def __init__(self, raw_results=None):
+        if raw_results is None:
+            return False
+
+        self.values = {}
+
+        self.raw_results = raw_results
+        self.raw_results_ref = raw_results
+
+        self.parse()
+
+    def parse(self):
+        self.strip_header()
+        self.extract_data()
+
+    def strip_header(self):
+        pass
+
+    def extract_data(self):
+        lines = self.raw_results.split('\n')
+
+        for l in lines:
+            if 'final' in l:
+                val = l.split(':')[1]
+                val = float(val)
+
+                self.values[columns[0]] = val
+                return
