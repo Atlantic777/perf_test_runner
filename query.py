@@ -17,6 +17,7 @@ class QueryManager:
         reg(PerfTimeSizeQuery)
         reg(PerfEstQuery)
         reg(TimeCrossQuery)
+        reg(TimeCrossVsPefEstQuery)
 
         self.parent = parent
         self.entity_manager = self.parent.entity_manager
@@ -128,7 +129,7 @@ class Query:
         return f
 
     def get_model(self):
-        raise Exception("too abstract")
+        self
 
     def parse(self):
         for entity in self.entities:
@@ -197,8 +198,13 @@ class Query:
         if self.plot == []:
             return self.columns
 
-        f = lambda c: any([key for key in self.plot if key in c[0]])
-        filtered_cols = [col for col in self.columns if f(col)]
+        # f = lambda c: any([key for key in self.plot if key in c[0]])
+        # filtered_cols = [col for col in self.columns if f(col)]
+
+        filtered_cols = []
+        for col_name in self.plot:
+            print(col_name)
+            filtered_cols.append([col for col in self.columns if col_name in col[0]])
 
         return filtered_cols
 
@@ -297,6 +303,25 @@ class TimeCrossQuery(Query, QueryDataTableModel):
     }
 
     plot = ['user norm']
+
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class TimeCrossVsPefEstQuery(Query, QueryDataTableModel):
+    title = "perf_est vs cross_time"
+    values = {
+        'cross_time': ['user'],
+        'perf_est_fron': ['estimation'],
+    }
+
+    plot = [
+        'user norm',
+        'estimation norm',
+    ]
 
     def __init__(self, entity_manager):
         Query.__init__(self, entity_manager)
