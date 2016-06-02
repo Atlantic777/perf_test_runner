@@ -18,6 +18,7 @@ class QueryManager:
         reg(PerfEstQuery)
         reg(TimeCrossQuery)
         reg(TimeCrossVsPefEstQuery)
+        reg(PerfEstBackQuery)
 
         self.parent = parent
         self.entity_manager = self.parent.entity_manager
@@ -318,6 +319,23 @@ class TimeCrossVsPefEstQuery(Query, QueryDataTableModel):
     plot = [
         'user norm',
         'estimation norm',
+    ]
+
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+    def get_model(self):
+        return self
+
+class PerfEstBackQuery(Query, QueryDataTableModel):
+    title = 'perf back est'
+    values = {
+        'perf_est_back' : 'total',
+    }
+
+    plot = [
+        'total norm'
     ]
 
     def __init__(self, entity_manager):

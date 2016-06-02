@@ -283,5 +283,6 @@ class PerfEstBackJob(JobBase):
             self.instance.parent.source.path,
             "-o/dev/null"
         ]
+        args += ['-I' + include_folder for include_folder in self.includes]
 
         return args
