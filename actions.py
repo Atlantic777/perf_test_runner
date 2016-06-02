@@ -152,7 +152,7 @@ class CompileInstanceAction(MetaAction):
     title = "Compile instance"
 
     def run(self, instance):
-        # includes = self.parent().includes
+        includes = self.parent().includes
         job = CompilerJob(instance, includes)
         job.run()
 
@@ -169,7 +169,7 @@ class GenerateBitcodeAction(MetaAction):
         ]
 
     def run(self, instance):
-        # includes = self.parent().includes
+        includes = self.parent().includes
         job = GenerateBitcodeJob(instance, includes)
         job.run()
 

@@ -39,6 +39,8 @@ class ResultExplorer(QSplitter):
 
         self.instance_type = None
 
+        self.includes = self.entity_manager.include_dirs
+
 
     def build_layout(self):
         # get job_list_view
