@@ -198,9 +198,6 @@ class Query:
         if self.plot == []:
             return self.columns
 
-        # f = lambda c: any([key for key in self.plot if key in c[0]])
-        # filtered_cols = [col for col in self.columns if f(col)]
-
         filtered_cols = []
         for col_name in self.plot:
             print(col_name)
