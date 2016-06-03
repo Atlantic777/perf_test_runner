@@ -31,6 +31,8 @@ class QueryDataTableView(QTableView):
 
         self.doubleClicked.connect(self.open_details)
 
+        self.detail_views = []
+
     def open_details(self, index):
         row = index.row()
         col = index.column()
@@ -40,7 +42,7 @@ class QueryDataTableView(QTableView):
         print(entity)
 
         w  = EntityWidget(parent=None)
-        self.w = w
+        self.detail_views.append(w)
         w.entity_view.entitySelectionChanged(entity)
 
         instance_changed = w.entity_view.instanceSelectionChanged
