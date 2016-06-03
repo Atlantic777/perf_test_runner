@@ -315,7 +315,8 @@ class InstanceView(QTabWidget):
 
         self.widgets = {}
         self.create_legacy_tab()
-        for result in self.instance.results.values():
+        for key in sorted(self.instance.results.keys()):
+            result = self.instance.results[key]
             idx = self.addTab(factory.get_widget(result), result.tag)
             self.widgets[result.tag] = idx
 
