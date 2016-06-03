@@ -22,6 +22,24 @@ class QueryPlotWidgetBuilder:
 
         return w
 
+class EntityDetailWidget(EntityWidget):
+    def __init__(self, entity):
+        super().__init__()
+
+        w = self
+        w.entity_view.entitySelectionChanged(entity)
+
+        instance_changed = w.entity_view.instanceSelectionChanged
+        instance_changed.connect(w.instance_view.setInstance)
+
+        sh = w.entity_view.minimumSizeHint().height()
+
+        self.setWindowTitle("# ")
+        self.resize(800, 600)
+
+        self.setSizes([sh, 600-sh])
+
+
 class QueryDataTableView(QTableView):
     def __init__(self):
         super().__init__()
@@ -36,22 +54,12 @@ class QueryDataTableView(QTableView):
     def open_details(self, index):
         row = index.row()
         col = index.column()
-        print( (row, col) )
 
         entity = self.model().getEntityAt(row)
-        print(entity)
 
-        w  = EntityWidget(parent=None)
+        w  = EntityDetailWidget(entity)
         self.detail_views.append(w)
-        w.entity_view.entitySelectionChanged(entity)
-
-        instance_changed = w.entity_view.instanceSelectionChanged
-        instance_changed.connect(w.instance_view.setInstance)
-
         w.show()
-        print("end of this")
-
-
 
 class QueryWidget(QSplitter):
     def __init__(self, parent):
