@@ -13,8 +13,8 @@ from actions import *
 
 
 class EntityWidget(QSplitter):
-    def __init__(self):
-        super().__init__(Qt.Vertical)
+    def __init__(self, parent=None):
+        super().__init__(Qt.Vertical, parent=parent)
 
         self.entity_view = EntityView()
         self.instance_view = InstanceView()

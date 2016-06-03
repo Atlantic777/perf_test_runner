@@ -159,6 +159,10 @@ class QueryDataTableModel(QAbstractTableModel):
         entity_title = self.entity_titles[row]
         return self.query_data[entity_title]
 
+    def getEntityAt(self, row):
+        entity_title = self.entity_titles[row]
+        return self.entity_manager.get_entity(entity_title)
+
     def sort(self, column, order):
         reverse_order = False
         column = column - 1

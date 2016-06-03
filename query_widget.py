@@ -8,6 +8,8 @@ from PyQt4.QtCore import (
 from query import *
 from plots import *
 
+from widgets.result_explorer import EntityWidget
+
 class QueryPlotWidgetBuilder:
     def get_widget(self, query, table):
         w = QWidget()
@@ -26,6 +28,28 @@ class QueryDataTableView(QTableView):
         self.setSortingEnabled(True)
         self.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
         self.verticalHeader().setVisible(False)
+
+        self.doubleClicked.connect(self.open_details)
+
+    def open_details(self, index):
+        row = index.row()
+        col = index.column()
+        print( (row, col) )
+
+        entity = self.model().getEntityAt(row)
+        print(entity)
+
+        w  = EntityWidget(parent=None)
+        self.w = w
+        w.entity_view.entitySelectionChanged(entity)
+
+        instance_changed = w.entity_view.instanceSelectionChanged
+        instance_changed.connect(w.instance_view.setInstance)
+
+        w.show()
+        print("end of this")
+
+
 
 class QueryWidget(QSplitter):
     def __init__(self, parent):
