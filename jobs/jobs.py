@@ -261,6 +261,7 @@ class PerfEstJob(JobBase):
         args = [
             OPT_PATH,
             "-analyze",
+            "-debug-only=perf-est",
             "-perf-est",
             self.instance.results[GenerateBitcodeResult.tag].action_output_file.full_path
         ]
@@ -278,6 +279,10 @@ class PerfEstBackJob(JobBase):
         args = [
             CLANG_PATH,
             "--target=mips",
+        ]
+        args.append("--sysroot")
+        args.append(CROSS_SYSROOT)
+        args += [
             "-S",
             self.instance.opt,
         ]

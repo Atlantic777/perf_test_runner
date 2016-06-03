@@ -1,140 +1,64 @@
 #!/usr/bin/python3
 """This is entry point of GUI application"""
-
-from multiprocessing import Pool
-from time import sleep
-from application import Application, GUIApplication
 from entity import *
 from jobs import *
 from settings import *
-from functools import partial as p
 from os import sys
+from application import GUIApplication
 
 def main():
     a = GUIApplication()
     a.run()
 
+def describe(instance):
+    r_fron = instance.results['perf_est_fron']
+    r_back = instance.results['perf_est_back']
 
-class Query:
-    title = "some dummy query"
-    opts = ['-O0', '-O3']
-    result_tags = ['executable_size', 'perf']
-    values = {
-        'perf': ['instructions', 'cycles'],
-    }
+    r_fron.parse()
+    r_back.parse()
 
-    meta = {
-        'perf': [
-            ('ipc', 'instructions', 'cycles', lambda a, b: a/b),
-        ]
-    }
+    fron_freq_d = r_fron.parsed_data['freq']
+    back_freq_d = r_back.parsed_data['freq']
 
-    show = ['ipc', 'instructions', 'cycles']
+    for function in fron_freq_d.keys():
+        for block in fron_freq_d[function].keys():
+            if function not in back_freq_d or block not in back_freq_d[function]:
+                continue
 
-    def __init__(self, entity_manager):
-        self.entity_manager = entity_manager
-        self.cols = []
-        self.entity_list = [self.entity_manager.entityList[2]]
+            d1 = fron_freq_d[function][block]
+            d2 = back_freq_d[function][block]
 
-        self.run_parser()
-        self.create_categories()
-        self.print_log()
+            n1 = float(d1['norm_freq'])
+            n2 = float(d2['norm_freq'])
 
-    def print_log(self):
-        f = lambda c: any([key for key in self.show if key in c[0]])
-        filtered_cols = filter(f, self.cols)
-        
-        for entity in self.entity_list:
-            for c in filtered_cols:
-                print( (entity.source.name, c[0], c[1](entity) ) )
+            cnt1 = float(d1['cnt'])
+            cnt2 = float(d2['cnt'])
 
-        print("--------")
+            fmt = "{:100} {:20.2f} {:20.2f} {:20.2f} {:20.2f}"
+            s = fmt.format(
+                ' '.join([instance.parent.source.name, instance.opt, function, block]),
+                n1,
+                n2,
+                cnt1,
+                cnt2,
+            )
 
-    def create_categories(self):
-        for tag in self.values.keys():
-            for value in self.values[tag]:
-                self.create_category(tag, value, norm=True)
-
-        for tag in self.meta.keys():
-            for args in self.meta[tag]:
-                self.create_category(tag, args, norm=True)
-
-    def run_parser(self):
-        for entity in self.entity_list:
-            for instance in entity.all_instances():
-                if instance.compiler.name == 'clang' and instance.opt in self.opts:
-                    for tag in self.values.keys():
-                        instance.results[tag].parse()
-
-
-    def create_category(self, tag, args, norm=False):
-        value = None
-        params = None
-
-        if type(args) == type( str() ):
-            value = args
-            params = [tag, args]
-        else:
-            value = args[0]
-            params = [tag] + list(args)
-
-        functions = []
-
-        norm_coef_f = lambda entity, functions: max([f(entity) for f in functions])
-        norm_f = lambda entity, f, norm_coef_f: f(entity)/norm_coef_f(entity)
-
-        for opt in self.opts:
-            f = self.create_f(*params, opt=opt)
-            functions.append(f)
-
-            self.cols.append(("{:20} {:>20} {:4}".format(tag, value, opt), f))
-
-        if norm:
-            norm_coef_f = p(norm_coef_f, functions=functions)
-            for opt in self.opts:
-                f = self.create_f(*params, opt=opt)
-                f_n = p(norm_f, f=f, norm_coef_f=norm_coef_f)
-
-                self.cols.append(("{:20} {:>15} norm {:4}".format(tag, value, opt), f))
-
-    def create_f(self, *args, **kwargs):
-        is_meta = False
-
-        (tag, value, title, value_1, value_2, op) = [None for i in range(6)]
-        opt = kwargs['opt']
-
-        if len(args) == 2:
-            (tag, value) = args
-        elif len(args) == 5:
-            is_meta = True
-            (tag, title, value_1, value_2, op) = args
-
-
-        results_obj = lambda entity, opt: entity.instances['clang'][opt].results
-        tag_f = lambda entity, tag, r: r(entity)[tag].parsed_data
-        mother_f = lambda entity, value, tag: tag(entity)[value]
-
-        r = p(results_obj, opt=opt)
-        e = p(tag_f, tag=tag, r=r)
-
-        f = None
-        if is_meta:
-            meta_f = lambda entity, value_1, value_2: op(value_1(entity), value_2(entity))
-            f1 = p(mother_f, tag=e, value=value_1)
-            f2 = p(mother_f, tag=e, value=value_2)
-            f = p(meta_f, value_1=f1, value_2=f2) 
-        else:
-            f = p(mother_f, tag=e, value=value)
-
-        return f
+            print(s)
 
 def scratch():
     manager = EntityManager()
+    executor = Executor(manager)
+
+    scope = Scope()
+    scope.domain = "everything"
+
+    executor.execute(PerfEstJob, scope, force=False, verbose=True)
+    executor.execute(PerfEstBackJob, scope, force=False, verbose=True)
 
     for entity in manager.entityList:
-        print(entity)
-
-    # q = Query(manager)
+        for instance in entity.all_instances():
+            if instance.opt in scope.opts and instance.compiler.name in scope.compilers:
+                describe(instance)
 
 if __name__ == "__main__":
     if '-s' in sys.argv:
