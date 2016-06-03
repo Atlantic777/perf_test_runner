@@ -22,22 +22,33 @@ class QueryPlotWidgetBuilder:
 
         return w
 
-class EntityDetailWidget(EntityWidget):
+class EntityDetailWidget(QWidget):
     def __init__(self, entity):
         super().__init__()
+        self.resize(1920/2, 600)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
 
-        w = self
-        w.entity_view.entitySelectionChanged(entity)
+        self.detail_view = self._EntityDetailWidget(entity)
+        self.layout.addWidget(QLabel(entity.source.name))
+        self.layout.addWidget(self.detail_view)
 
-        instance_changed = w.entity_view.instanceSelectionChanged
-        instance_changed.connect(w.instance_view.setInstance)
+        self.setWindowTitle("# " + entity.source.name)
 
-        sh = w.entity_view.minimumSizeHint().height()
+    class _EntityDetailWidget(EntityWidget):
+        def __init__(self, entity):
+            super().__init__()
 
-        self.setWindowTitle("# ")
-        self.resize(800, 600)
+            w = self
+            w.entity_view.entitySelectionChanged(entity)
 
-        self.setSizes([sh, 600-sh])
+            instance_changed = w.entity_view.instanceSelectionChanged
+            instance_changed.connect(w.instance_view.setInstance)
+
+            sh = w.entity_view.minimumSizeHint().height()
+            h = self.size().height()
+
+            self.setSizes([sh, h-sh])
 
 
 class QueryDataTableView(QTableView):
