@@ -19,6 +19,7 @@ class QueryManager:
         reg(TimeCrossQuery)
         reg(TimeCrossVsPefEstQuery)
         reg(PerfEstBackQuery)
+        reg(PerfEstBackVsFrontQuery)
 
         self.parent = parent
         self.entity_manager = self.parent.entity_manager
@@ -130,7 +131,8 @@ class Query:
         return f
 
     def get_model(self):
-        raise Exception("Too abstract!")
+        return self
+        # raise Exception("Too abstract!")
 
     def parse(self):
         for entity in self.entities:
@@ -328,7 +330,12 @@ class TimeCrossVsPefEstQuery(Query, QueryDataTableModel):
     def get_model(self):
         return self
 
-class PerfEstBackQuery(Query, QueryDataTableModel):
+class QueryMixin(Query, QueryDataTableModel):
+    def __init__(self, entity_manager):
+        Query.__init__(self, entity_manager)
+        QueryDataTableModel.__init__(self)
+
+class PerfEstBackQuery(QueryMixin):
     title = 'perf back est'
     values = {
         'perf_est_back' : [ 'total' ],
@@ -338,9 +345,14 @@ class PerfEstBackQuery(Query, QueryDataTableModel):
         'total norm'
     ]
 
-    def __init__(self, entity_manager):
-        Query.__init__(self, entity_manager)
-        QueryDataTableModel.__init__(self)
+class PerfEstBackVsFrontQuery(QueryMixin):
+    title = 'perf est front vs. back'
+    values = {
+        'perf_est_fron' : ['estimation'],
+        'perf_est_back' : ['total'],
+    }
 
-    def get_model(self):
-        return self
+    plot = [
+        'total norm',
+        'estimation norm',
+    ]
