@@ -1,9 +1,7 @@
-from PyQt4.QtGui import (
-    QTextBrowser,
-    QFont,
-)
+from PyQt4.QtGui import *
 
 from results import *
+from models import *
 
 class QMonoFont(QFont):
     def __init__(self):
@@ -12,21 +10,6 @@ class QMonoFont(QFont):
         self.setFamily('monospace')
         self.setFixedPitch(True)
         self.setStyleHint(QFont.TypeWriter)
-
-
-class ResultWidgetFactory:
-    result2widget_map = {}
-
-    def get_widget(self, result):
-        t = type(result)
-        WidgetClass = None
-
-        try:
-            WidgetClass = self.result2widget_map[t]
-        except:
-            WidgetClass = DefaultResultWidget
-
-        return WidgetClass(result)
 
 class DefaultResultWidget(QTextBrowser):
     def __init__(self, result):
@@ -72,4 +55,45 @@ class LegacyResultReportWidget(QTextBrowser):
 
         return report
 
+class PerfEstWidget(QWidget):
+    def __init__(self, result, parent=None):
+        super().__init__(parent=parent)
+        self.result = result
+        self.result.parse()
+        self.build_layout()
 
+    def build_layout(self):
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.add_total_sum_qlabel()
+        self.add_table()
+
+    def add_total_sum_qlabel(self):
+        total_sum_tag = self.result.ParserClass.columns[0]
+        val = float(self.result.parsed_data[total_sum_tag])
+        s = "{:,.2f}".format(val)
+        self.layout.addWidget(QLabel("<b>Total sum: " + s + "</b>"))
+
+    def add_table(self):
+        self.table = QTableView()
+        self.model = PerfEstModel(self.result)
+        self.table.setModel(self.model)
+
+        self.layout.addWidget(self.table)
+
+class ResultWidgetFactory:
+    result2widget_map = {
+        PerfEstResult : PerfEstWidget,
+        PerfEstBackResult : PerfEstWidget,
+    }
+
+    def get_widget(self, result):
+        t = type(result)
+        WidgetClass = None
+
+        try:
+            WidgetClass = self.result2widget_map[t]
+        except:
+            WidgetClass = DefaultResultWidget
+
+        return WidgetClass(result)

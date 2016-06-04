@@ -176,3 +176,74 @@ class QueryDataTableModel(QAbstractTableModel):
         self.beginResetModel()
         self.entity_titles.sort(key=l, reverse=reverse_order)
         self.endResetModel()
+
+class PerfEstModel(QAbstractTableModel):
+    column_headers = [
+        'function',
+        'basic block',
+        'entry freq',
+        'block freq',
+        'norm freq',
+        'i count',
+        'val',
+    ]
+
+    def __init__(self, result):
+        super().__init__()
+        self.result = result
+        self.d = result.parsed_data['freq']
+
+        self.build_fbb_pairs()
+
+        (f, b) = self.pairs[0]
+        self.column_titles = sorted(self.d[f][b].keys())
+
+    def build_fbb_pairs(self):
+        f = sorted(self.d.keys())
+
+        self.pairs = []
+        for function in f:
+            for bb_name in sorted(self.d[function].keys()):
+                self.pairs.append( (function, bb_name) )
+
+    def headerData(self, section, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return self.column_headers[section]
+            if orientation == QtCore.Qt.Vertical:
+                return section + 1
+
+    def columnCount(self, index=None):
+        return len(self.column_headers)
+
+    def rowCount(self, index=None):
+        return len(self.pairs)
+
+    def data(self, index, role):
+        if role == QtCore.Qt.DisplayRole:
+            entry =  self.get_entry_for_row(index.row())
+            fmt = lambda v : "{:,.2f}".format(float(v))
+
+            c = index.column()
+            if c == 0:
+                return self.pairs[index.row()][0]
+            elif c == 1:
+                return self.pairs[index.row()][1]
+            elif c == 2:
+                return fmt(entry['entry_freq'])
+            elif c == 3:
+                return fmt(entry['block_freq'])
+            elif c == 4:
+                return fmt(entry['norm_freq'])
+            elif c == 5:
+                return fmt(entry['cnt'])
+            elif c == 6:
+                return fmt(entry['val'])
+            else:
+                return "None"
+        elif role == QtCore.Qt.TextAlignmentRole and index.column() >= 2:
+            return QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+
+    def get_entry_for_row(self, row):
+        (function, block) = self.pairs[row]
+        return self.d[function][block]
