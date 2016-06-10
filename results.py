@@ -93,7 +93,16 @@ class Result:
             report += self.raw_output + '\n'
             report += "-"*10 + '\n'
 
+        report += self.special_report()
+
         return report
+
+    def special_report(self):
+        """
+        Use this function to implement text report in
+        impl classes.
+        """
+        return ""
 
     def parse(self):
         if self.ParserClass is None:
@@ -126,6 +135,12 @@ class GenerateBitcodeResult(Result):
     tag = "bitcode"
     has_output = True
 
+    def special_report(self):
+        with open(self.action_output_file.full_path) as f:
+            r = f.read()
+
+        return r
+
 class OptimiserStatsResult(Result):
     tag = "optimiser_stats"
     has_analysis = True
@@ -150,6 +165,12 @@ class CrossAsmResult(Result):
     has_analysis = False
     has_output = True
     extension = "-x.s"
+
+    def special_report(self):
+        with open(self.action_output_file.full_path) as f:
+            r = f.read()
+
+        return r
 
 class TimeCrossResult(Result):
     tag = "cross_time"

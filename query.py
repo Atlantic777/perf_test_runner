@@ -192,8 +192,11 @@ class Query:
         if self.show == []:
             return self.columns
 
-        f = lambda c: any([key for key in self.show if key in c[0]])
-        filtered_cols = [col for col in self.columns if f(col)]
+        f_title = lambda c: any([key for key in self.show if key in c[0]])
+        f_opt = lambda c: any([key for key in self.opts if key in c[0]])
+
+        filtered_cols = [col for col in self.columns if f_title(col)]
+        filtered_cols = [col for col in filtered_cols if f_opt(col)]
 
         return filtered_cols
 
@@ -350,9 +353,19 @@ class PerfEstBackVsFrontQuery(QueryMixin):
     values = {
         'perf_est_fron' : ['estimation'],
         'perf_est_back' : ['total'],
+        'cross_time' : ['user'],
     }
+
+    show = [
+        'estimation',
+        'total',
+        'user',
+    ]
+
+    opts = ["-O1", "-O2", "-O3"]
 
     plot = [
         'total norm',
         'estimation norm',
+        'user norm',
     ]
