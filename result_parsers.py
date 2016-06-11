@@ -224,14 +224,13 @@ class CrossAsmParser(ResultParserBase):
                 asm_fbb_tree[func_name] = {}
                 current_func = func_name
             elif "# %" in l:
-                bb_name = l.split('# %')[1][:-1]
-                l = []
-                asm_fbb_tree[current_func][bb_name] = l
+                bb_name = l.split('# %')[1]
+                current_l = []
+                asm_fbb_tree[current_func][bb_name] = current_l
                 current_bb = bb_name
-                current_l = l
+                current_l.append(l)
             elif current_func and current_bb:
-                current_l.append(l[:-1])
-                pass
+                current_l.append(l)
             else:
                 pass
 

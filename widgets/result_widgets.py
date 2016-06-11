@@ -2,6 +2,7 @@ from PyQt4.QtGui import *
 
 from results import *
 from models import *
+from .cross_asm_browser import CrossAsmBrowser
 
 class QMonoFont(QFont):
     def __init__(self):
@@ -69,7 +70,7 @@ class PerfEstWidget(QWidget):
         self.add_table()
 
     def add_total_sum_qlabel(self):
-        total_sum_tag = self.result.ParserClass.columns[0]
+        total_sum_tag = self.result.AnalysisParserClass.columns[0]
         val = float(self.result.parsed_data[total_sum_tag])
         s = "{:,.2f}".format(val)
         self.layout.addWidget(QLabel("<b>Total sum: " + s + "</b>"))
@@ -85,6 +86,7 @@ class ResultWidgetFactory:
     result2widget_map = {
         PerfEstResult : PerfEstWidget,
         PerfEstBackResult : PerfEstWidget,
+        CrossAsmResult : CrossAsmBrowser,
     }
 
     def get_widget(self, result):
