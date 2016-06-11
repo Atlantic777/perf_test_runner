@@ -33,7 +33,8 @@ class Result:
     raw_output = None
     has_output = False
     has_analysis = False
-    ParserClass = None
+    AnalysisParserClass = None
+    OutputParserClass = None
     parsed_data = None
 
     def __init__(self, instance):
@@ -105,11 +106,20 @@ class Result:
         return ""
 
     def parse(self):
-        if self.ParserClass is None:
+        if self.AnalysisParserClass is None and self.OutputParserClass is None:
             raise Exception("parser is not implemented")
-        else:
-            parser = self.ParserClass(self.raw_output)
+
+        if self.AnalysisParserClass:
+            parser = self.AnalysisParserClass(self.raw_output)
             self.parsed_data = parser.values
+
+        print("here")
+        if self.OutputParserClass:
+            print("there")
+            with open(self.action_output_file.full_path, "r") as f:
+                l = f.read()
+                parser = self.OutputParserClass(l)
+                self.parsed_output = parser.values
 
 class CompilationResult(Result):
     extension = ".out"
@@ -148,23 +158,24 @@ class OptimiserStatsResult(Result):
 class PerfResult(Result):
     tag = "perf"
     has_analysis = True
-    ParserClass = PerfResultParser
+    AnalysisParserClass = PerfResultParser
 
 class ExecutableSizeResult(Result):
     tag = "executable_size"
     has_analysis = True
-    ParserClass = ExecutableSizeParser
+    AnalysisParserClass = ExecutableSizeParser
 
 class TimeExecutionResult(Result):
     tag = "execution_time"
     has_analysis = True
-    ParserClass = TimeExecutionParser
+    AnalysisParserClass = TimeExecutionParser
 
 class CrossAsmResult(Result):
     tag = "cross_asm"
     has_analysis = False
     has_output = True
     extension = "-x.s"
+    OutputParserClass = CrossAsmParser
 
     def special_report(self):
         with open(self.action_output_file.full_path) as f:
@@ -175,14 +186,14 @@ class CrossAsmResult(Result):
 class TimeCrossResult(Result):
     tag = "cross_time"
     has_analysis = True
-    ParserClass = TimeExecutionParser
+    AnalysisParserClass = TimeExecutionParser
 
 class PerfEstResult(Result):
     tag = "perf_est_fron"
     has_analysis = True
-    ParserClass = PerfEstParser
+    AnalysisParserClass = PerfEstParser
 
 class PerfEstBackResult(Result):
     tag = "perf_est_back"
     has_analysis = True
-    ParserClass = PerfEstBackParser
+    AnalysisParserClass = PerfEstBackParser

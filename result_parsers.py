@@ -208,3 +208,30 @@ class PerfEstBackParser(ResultParserBase):
 
                 self.values[self.columns[0]] = val
                 return
+
+class CrossAsmParser(ResultParserBase):
+    def extract_data(self):
+        asm_fbb_tree = {}
+        self.values['asm_fbb_tree'] = asm_fbb_tree
+
+        current_func = None
+        current_bb = None
+        current_l = None
+
+        for l in self.raw_results.split('\n'):
+            if "# @" in l and l[0] != '\t':
+                func_name = l.split(':')[0]
+                asm_fbb_tree[func_name] = {}
+                current_func = func_name
+            elif "# %" in l:
+                bb_name = l.split('# %')[1][:-1]
+                l = []
+                asm_fbb_tree[current_func][bb_name] = l
+                current_bb = bb_name
+                current_l = l
+            elif current_func and current_bb:
+                current_l.append(l[:-1])
+                pass
+            else:
+                pass
+
