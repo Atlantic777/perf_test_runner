@@ -7,6 +7,10 @@ from os import sys
 from application import GUIApplication
 from printers import PerfEstCSVPrinter
 
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import HtmlFormatter
+
 def main():
     a = GUIApplication()
     a.run()
@@ -18,16 +22,17 @@ def scratch():
     entity = manager.get_entity("chomp")
     instance = entity.instances['clang']['-O1']
 
-    p = PerfEstCSVPrinter(instance.results)
-    print(p.get_report())
+    instance.results['cross_asm'].parse()
+    parsed_asm = instance.results['cross_asm'].parsed_output['asm_fbb_tree']
 
-    # x_asm_res.parse()
+    f = list(parsed_asm.keys())[0]
+    bb = list(parsed_asm[f].keys())[0]
 
-    # i = 1
-    # for f in x_asm_res.parsed_output.keys():
-    #     for bb in x_asm_res.parsed_output[f].keys():
-    #         print("{:3}) {:30} - {:30}".format(i, f, bb))
-    #         i += 1
+    bb_content = "\n".join(parsed_asm[f][bb])
+
+    Lexer = get_lexer_by_name('asm')
+    s = highlight(bb_content, Lexer, HtmlFormatter())
+    print(s)
 
 if __name__ == "__main__":
     if '-s' in sys.argv:

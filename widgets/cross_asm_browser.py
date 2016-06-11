@@ -3,6 +3,10 @@ from PyQt4.QtCore import (
     Qt,
 )
 
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import HtmlFormatter
+
 class CrossAsmBrowser(QSplitter):
     def __init__(self, result, parent=None):
         super().__init__(parent=parent)
@@ -79,7 +83,10 @@ class CrossAsmBrowser(QSplitter):
         bb_content = self.parsed_asm[self.current_fn][bb_name]
         bb_content = "\n".join(bb_content)
 
-        self.text_browser.setText(bb_content)
+        Lexer = get_lexer_by_name('asm')
+        s = highlight(bb_content, Lexer, HtmlFormatter(noclasses=True))
+
+        self.text_browser.setText(s)
 
     def selection_changed(self):
         cursor = self.text_browser.textCursor()
