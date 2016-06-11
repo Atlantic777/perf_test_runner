@@ -1,6 +1,28 @@
 from results import *
 
-class PerfResultParser:
+class ResultParserBase:
+    columns = None
+
+    def __init__(self, raw_results):
+        self._preinit(raw_results)
+        self.parse()
+
+    def _preinit(self, raw_results):
+        self.values = {}
+        self.raw_results = raw_results
+        self.raw_results_ref = raw_results
+
+    def parse(self):
+        self.strip_header()
+        self.extract_data()
+
+    def strip_header(self):
+        pass
+
+    def extract_data(self):
+        pass
+
+class PerfResultParser(ResultParserBase):
     columns = [
         'task-clock',
         'context-switches',
@@ -14,21 +36,6 @@ class PerfResultParser:
         'branch-misses',
         'time',
     ]
-
-    def __init__(self, raw_results=None):
-        if raw_results is None:
-            return False
-
-        self.values = {}
-
-        self.raw_results = raw_results # working copy
-        self.raw_results_ref = raw_results # reference to original object
-
-        self.parse()
-
-    def parse(self):
-        self.strip_header()
-        self.extract_data()
 
     def strip_header(self):
         self.raw_results = self.raw_results.split('\n')
@@ -60,7 +67,7 @@ class PerfResultParser:
             # print("can't parse " + tag)
             pass
 
-class TimeExecutionParser:
+class TimeExecutionParser(ResultParserBase):
     columns = [
         'user',
         'system',
@@ -68,24 +75,6 @@ class TimeExecutionParser:
         'CPU',
         'pagefaults',
     ]
-
-    def __init__(self, raw_results=None):
-        if raw_results is None:
-            return False
-
-        self.values = {}
-
-        self.raw_results = raw_results
-        self.raw_results_ref = raw_results
-
-        self.parse()
-
-    def parse(self):
-        self.strip_header()
-        self.extract_data()
-
-    def strip_header(self):
-        pass
 
     def extract_data(self):
         splitted_cols = self.raw_results.split(' ')
@@ -105,31 +94,13 @@ class TimeExecutionParser:
         except Exception as e:
             print(e)
 
-class ExecutableSizeParser:
+class ExecutableSizeParser(ResultParserBase):
     columns = [
         'text',
         'data',
         'bss',
         'dec',
     ]
-
-    def __init__(self, raw_results=None):
-        if raw_results is None:
-            return False
-
-        self.values = {}
-
-        self.raw_results = raw_results
-        self.raw_results_ref = raw_results
-
-        self.parse()
-
-    def parse(self):
-        self.strip_header()
-        self.extract_data()
-
-    def strip_header(self):
-        pass
 
     def extract_data(self):
         self.raw_results = self.raw_results.replace(' ', '')
@@ -155,21 +126,14 @@ class ExecutableSizeParser:
             print(column_names)
             print(column_values)
 
-class PerfEstParser:
+class PerfEstParser(ResultParserBase):
     columns = [
         'estimation',
     ]
 
-    def __init__(self, raw_results=None):
-        if raw_results is None:
-            return False
-
-        self.values = {}
+    def __init__(self, raw_results):
+        super()._preinit(raw_results)
         self.values['freq'] = {}
-
-        self.raw_results = raw_results
-        self.raw_resutls_ref = raw_results
-
         self.parse()
 
     def parse(self):
@@ -206,29 +170,15 @@ class PerfEstParser:
                 val = float( s[1] )
                 self.values[self.columns[0]] = val
 
-class PerfEstBackParser:
+class PerfEstBackParser(ResultParserBase):
     columns = [
         'total',
     ]
 
-    def __init__(self, raw_results=None):
-        if raw_results is None:
-            return False
-
-        self.values = {}
+    def __init__(self, raw_results):
+        super()._preinit(raw_results)
         self.values['freq'] = {}
-
-        self.raw_results = raw_results
-        self.raw_results_ref = raw_results
-
         self.parse()
-
-    def parse(self):
-        self.strip_header()
-        self.extract_data()
-
-    def strip_header(self):
-        pass
 
     def extract_data(self):
         lines = self.raw_results.split('\n')
