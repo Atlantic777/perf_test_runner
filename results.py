@@ -113,9 +113,7 @@ class Result:
             parser = self.AnalysisParserClass(self.raw_output)
             self.parsed_data = parser.values
 
-        print("here")
         if self.OutputParserClass:
-            print("there")
             with open(self.action_output_file.full_path, "r") as f:
                 l = f.read()
                 parser = self.OutputParserClass(l)
