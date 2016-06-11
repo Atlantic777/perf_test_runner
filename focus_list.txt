@@ -1,0 +1,10 @@
+chomp.c
+dry.c
+flops-8.c
+atax.c
+huffbench.c
+syrk.c
+mvt.c
+flops-7.c
+3mm.c
+flops-2.c
