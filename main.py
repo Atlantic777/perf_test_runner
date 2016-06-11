@@ -10,55 +10,56 @@ def main():
     a = GUIApplication()
     a.run()
 
-def describe(instance):
-    r_fron = instance.results['perf_est_fron']
-    r_back = instance.results['perf_est_back']
-
-    r_fron.parse()
-    r_back.parse()
-
-    fron_freq_d = r_fron.parsed_data['freq']
-    back_freq_d = r_back.parsed_data['freq']
-
-    for function in fron_freq_d.keys():
-        for block in fron_freq_d[function].keys():
-            if function not in back_freq_d or block not in back_freq_d[function]:
-                continue
-
-            d1 = fron_freq_d[function][block]
-            d2 = back_freq_d[function][block]
-
-            n1 = float(d1['norm_freq'])
-            n2 = float(d2['norm_freq'])
-
-            cnt1 = float(d1['cnt'])
-            cnt2 = float(d2['cnt'])
-
-            fmt = "{:100} {:20.2f} {:20.2f} {:20.2f} {:20.2f}"
-            s = fmt.format(
-                ' '.join([instance.parent.source.name, instance.opt, function, block]),
-                n1,
-                n2,
-                cnt1,
-                cnt2,
-            )
-
-            print(s)
-
 def scratch():
     manager = EntityManager()
     executor = Executor(manager)
 
-    scope = Scope()
-    scope.domain = "everything"
+    entity = manager.get_entity("chomp")
+    instance = entity.instances['clang']['-O1']
 
-    executor.execute(PerfEstJob, scope, force=False, verbose=True)
-    executor.execute(PerfEstBackJob, scope, force=False, verbose=True)
+    x_asm_res = instance.results['cross_asm']
 
-    for entity in manager.entityList:
-        for instance in entity.all_instances():
-            if instance.opt in scope.opts and instance.compiler.name in scope.compilers:
-                describe(instance)
+    f_path = x_asm_res.action_output_file.full_path
+
+    print(instance)
+    print(f_path)
+
+    asm_fbb_tree = {}
+    current_func = None
+    current_bb = None
+    current_l = None
+
+    with open(f_path, "r") as f:
+        for l in f:
+            if "# @" in l and l[0] != '\t':
+                func_name = l.split(':')[0]
+                asm_fbb_tree[func_name] = {}
+                current_func = func_name
+
+                print("\n"*2+"="*60)
+                print(func_name)
+                print("="*60)
+            elif "# %" in l:
+                bb_name = l.split('# %')[1][:-1]
+                l = []
+                asm_fbb_tree[current_func][bb_name] = l
+                current_bb = bb_name
+                current_l = l
+
+                print(bb_name)
+                print("-"*60)
+            elif current_func and current_bb:
+                current_l.append(l[:-1])
+                print(l[:-1])
+            else:
+                print(l[:-1])
+
+    while True:
+        f = input("function name: ")
+        bb = input("bb name: ")
+
+        for l in asm_fbb_tree[f][bb]:
+            print(l)
 
 if __name__ == "__main__":
     if '-s' in sys.argv:
